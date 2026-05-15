@@ -6,6 +6,8 @@ const TechnoScore=require('../models/technopedia_user')
 const crypto = require('crypto');
 const { convertToIST } = require('../utils/timeUtils');
 const Offline26=require('../models/offline26');
+
+
 router.get('/test-db', async (req, res) => {
     try {
         // Try to create a simple document to test database connection
@@ -59,7 +61,7 @@ router.get('/test-db', async (req, res) => {
 // Helper function to check a specific database model
 const checkModelForStudent = async (Model, rollNumber, secondValue, type) => {
     const student = await Model.findOne({ rollNumber: rollNumber });
-
+    console.log(student);
     if (!student) return null;
 
     // Check matches for Contact
@@ -107,6 +109,7 @@ router.post('/check-student', async (req, res) => {
 
         // 1. Check Offline26 (New Batch First)
         let result = await checkModelForStudent(Offline26, cleanRollNumber, cleanSecond, "offline");
+        console.log(result);
         if (result) return res.json(result);
 
         // // 2. Check Online26
@@ -137,6 +140,7 @@ router.post('/check-student', async (req, res) => {
 
 // Start contest
 router.post('/techno/start', async (req, res) => {
+    console.log("in start");
     try {
         const { phone, name, school, studentType } = req.body;
         
@@ -839,17 +843,22 @@ router.post('/techno/end', async (req, res) => {
 
 // Get contest times - Remove time limits
 router.get('/techno/times', async (req, res) => {
+
     try {
         const { phone, sessionId } = req.query;
 
         // Get global contest schedule
-        const technoSchedule = await Technopedia.findOne()
-            .sort({ createdAt: -1 })
-            .select('startTime endTime');
+        // const technoSchedule = await Technopedia.findOne()
+        //     .sort({ createdAt: -1 })
+        //     .select('startTime endTime');
 
-        if (!technoSchedule) {
-            return res.status(404).json({ message: 'No contest schedule found' });
-        }
+            const technoSchedule = {
+                startTime: new Date('2026-05-10T09:00:00'),
+                endTime: new Date('2027-05-10T18:00:00')
+            };
+        // if (!technoSchedule) {
+        //     return res.status(404).json({ message: 'No contest schedule found' });
+        // }
 
         // Convert contest schedule times to IST
         const scheduleStartIST = convertToIST(technoSchedule.startTime);
@@ -890,29 +899,53 @@ router.get('/techno/times', async (req, res) => {
 });
 
 // Get contest dates
-router.get('/techno/dates', async (req, res) => {
-    try {
-        const technoSchedule = await Technopedia.findOne()
-            .sort({ createdAt: -1 })
-            .select('startTime endTime');
+// router.get('/techno/dates', async (req, res) => {
+//     try {
+//         const technoSchedule = await Technopedia.findOne()
+//             .sort({ createdAt: -1 })
+//             .select('startTime endTime');
         
-        if (!technoSchedule) {
-            return res.status(404).json({ message: 'No contest found' });
-        }
+//         if (!technoSchedule) {
+//             return res.status(404).json({ message: 'No contest found' });
+//         }
 
-        // Convert times to IST
-        const istStartTime = convertToIST(technoSchedule.startTime);
-        const istEndTime = convertToIST(technoSchedule.endTime);
+//         // Convert times to IST
+//         const istStartTime = convertToIST(technoSchedule.startTime);
+//         const istEndTime = convertToIST(technoSchedule.endTime);
 
-        res.json({
-            startTime: istStartTime.toISOString(),
-            endTime: istEndTime.toISOString(),
-            timezone: 'Asia/Kolkata'
-        });
-    } catch (error) {
-        console.error('Error fetching contest dates:', error);
-        res.status(500).json({ message: 'Error fetching contest dates' });
-    }
+//         res.json({
+//             startTime: istStartTime.toISOString(),
+//             endTime: istEndTime.toISOString(),
+//             timezone: 'Asia/Kolkata'
+//         });
+//     } catch (error) {
+//         console.error('Error fetching contest dates:', error);
+//         res.status(500).json({ message: 'Error fetching contest dates' });
+//     }
+// });
+router.get('/techno/dates', async (req, res) => {
+  try {
+
+    // Hardcoded dates
+    const technoSchedule = {
+      startTime: new Date('2026-05-10T09:00:00'),
+      endTime: new Date('2027-05-10T18:00:00')
+    };
+
+    // Convert times to IST
+    const istStartTime = convertToIST(technoSchedule.startTime);
+    const istEndTime = convertToIST(technoSchedule.endTime);
+
+    res.json({
+      startTime: istStartTime.toISOString(),
+      endTime: istEndTime.toISOString(),
+      timezone: 'Asia/Kolkata'
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 // Get question by ID

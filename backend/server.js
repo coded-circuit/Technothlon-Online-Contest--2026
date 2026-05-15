@@ -30,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 // Define allowed origins
 const allowedOrigins = [
   'http://localhost:3000',  // React dev server
+  'http://localhost:4000',
   'http://localhost:3001',  // Backend server
   'http://localhost:5173',  // Vite default
   'https://technothlon.techniche.org.in',
@@ -73,5 +74,5 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 // Start server
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server Started on port ${PORT}`));
