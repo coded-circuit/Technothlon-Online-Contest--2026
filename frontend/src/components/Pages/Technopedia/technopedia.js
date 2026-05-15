@@ -516,8 +516,8 @@ function Contest() {
                 <h2 className="TA-analysis-title">🔬 TechnoAnalysis Report</h2>
             <div style={{display:"flex"}}>
                 <div style={{height:"300px",
-                    background:"linear-gradient(to right, #810eed, #7700c6)",
-                    width:"600px",
+                    background:"linear-gradient(to right, #a03bff, #7700c6)",
+                    width:"660px",
                     borderRadius:"16px",
                     padding:"10px 50px 10px 10px",
                     display:"flex",
@@ -615,39 +615,50 @@ function Contest() {
 
                 </div>
 
-                <div style={{width:"350px",
+                <div style={{width:"520px",
                     height:"300px",
                     border:"2px solid white",
                     borderRadius:"16px",
                     background:"white",}}>
-                    <div style={{width:"300px",
+                    <div style={{width:"470px",
                         height:"50px",
                         borderRadius:"10px",
                         borderLeft:"7px solid blue",
                         margin:"20px",
-                        boxShadow: "0 0 10px gray"
+                        boxShadow: "0 0 5px blue",
+                        padding:"10px"
                     }}> Attempted</div>
-                    <div style={{width:"300px",
+                    <div style={{width:"470px",
                         height:"50px",
                         borderRadius:"10px",
                         borderLeft:"7px solid green",
                         margin:"20px",
-                        boxShadow: "0 0 10px gray"
+                        boxShadow: "0 0 5px green",
+                        padding:"10px"
                     }}>Correct</div>
-                    <div style={{width:"300px",
+                    <div style={{width:"470px",
                         height:"50px",
                         borderRadius:"10px",
                         borderLeft:"7px solid red",
                         margin:"20px",
-                        boxShadow: "0 0 10px gray"
+                        boxShadow: "0 0 5px red",
+                        padding:"10px"
                     }}>Wrong</div>
-                    <div style={{width:"300px",
+                    <div style={{width:"470px",
                         height:"50px",
                         borderRadius:"10px",
                         borderLeft:"7px solid orange",
                         margin:"20px",
-                        boxShadow: "0 0 10px gray"
-                    }}>Unattempted</div>
+                        boxShadow: "0 0 5px orange",
+                        padding:"10px",
+                        display:"flex",
+                        justifyContent:"space-between"
+                    }}>
+                        <div>Unattempted</div>
+                        <div style={{fontWeight:"700",
+                            fontSize:"20px"
+                        }}>3</div>
+                    </div>
                     
                 </div>
             </div>
@@ -687,7 +698,7 @@ function Contest() {
                     </div>
                 </div> */}
     
-                {/* Overview Cards */}
+                {/* Overview Cards
                 <div className="TA-analysis-overview">
                     <div className="TA-overview-card TA-attempted">
                         <div className="TA-overview-number">{analysisData.attemptedQuestions}</div>
@@ -705,31 +716,67 @@ function Contest() {
                         <div className="TA-overview-number">{analysisData.unattemptedQuestions}</div>
                         <div className="TA-overview-label">Unattempted</div>
                     </div>
-                </div>
+                </div> */}
     
-                {/* Performance Metrics */}
-                <div className="TA-performance-metrics">
-                    {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
-                        <div key={index} className="TA-metric-card">
-                            <div className="TA-metric-header">
-                                <span className="TA-metric-icon">{metricIcons[metricKey]}</span>
-                                <span className="TA-metric-title">{metricTitles[metricKey]}</span>
-                            </div>
-                            <div className="TA-metric-value">
-                                {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
-                            </div>
-                            <div className="TA-metric-bar">
+
+
+                <div style={{marginTop:"20px",display:"flex",justifyContent:"space-between"}}>
+                    <div>
+                    <div style={{fontSize:"25px",margin:"15px"}}>Performance Metrics</div>
+                    <div style={{width:"600px",
+                        height:"380px",
+                        borderRadius:"16px",
+                        backgroundColor:"white",
+                        fontSize:"16px",
+                        padding:"25px"
+                    }}>
+                        <div style={{color:"black",
+                            fontSize:"18px",
+                            fontWeight:"600",
+                            }}>
+                                {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
+
+                                <div key={index} style={{display:"flex",margin:"25px",justifyItems:"space-between",alignItems:"center"}}>
+                                    <div >
+                                        <span >{metricIcons[metricKey]}</span>
+                                        <span >{metricTitles[metricKey]}</span>
+                                    </div>
                                 <div
-                                    className="TA-metric-progress"
-                                    style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
-                                ></div>
-                            </div>
+                                    style={{
+                                        width: "300px",
+                                        height: "7px",
+                                        backgroundColor: "#ddd",
+                                        borderRadius: "10px",
+                                        overflow: "hidden",
+                                        position:"absolute",
+                                        left:"230px"
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                        width: `${30}%`,
+                                        height: "100%",
+                                        backgroundColor: "#00975a",
+                                        transition: "0.5s"
+                                        }}
+                                    />
+                                </div>
+                                <div style={{position:"absolute",left:"540px"}}>
+                                    {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
+                                </div>
+
+                                <div >
+                                    <div
+                                        style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
+                                    ></div>
+                                </div>
                         </div>
                     ))}
-                </div>
-    
-                {/* Insights Section */}
-                {analysisData.insights && (
+                        </div>
+                    </div>
+                    </div>
+                    <div style={{marginRight:"20px"}}>
+                            {analysisData.insights && (
                     <div className="TA-insights-section">
                         <h3>💡 Performance Insights</h3>
                         <div className="TA-insights-grid">
@@ -750,7 +797,32 @@ function Contest() {
                             ))}
                         </div>
                     </div>
-                )}
+                     )}
+                    </div>
+                </div>
+                {/* Performance Metrics
+                <div className="TA-performance-metrics">
+                    {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
+                        <div key={index} className="TA-metric-card">
+                            <div className="TA-metric-header">
+                                <span className="TA-metric-icon">{metricIcons[metricKey]}</span>
+                                <span className="TA-metric-title">{metricTitles[metricKey]}</span>
+                            </div>
+                            <div className="TA-metric-value">
+                                {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
+                            </div>
+                            <div className="TA-metric-bar">
+                                <div
+                                    className="TA-metric-progress"
+                                    style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    ))}
+                </div> */}
+    
+                {/* Insights Section */}
+                
     
                 {/* Question-wise Analysis */}
                 <div className="TA-question-analysis">
