@@ -11,11 +11,7 @@ dotenv.config();
 // Connect to MongoDB
 connectDB();
 
-
-
 const technopediaRoutes = require('./routes/Technopedia_Route');
-
-
 
 // Configure event emitter
 EventEmitter.defaultMaxListeners = 20;
@@ -74,4 +70,4 @@ app.use((err, req, res, next) => {
 });
 // Start server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server Started on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server Started on port http://localhost:${PORT}`));
