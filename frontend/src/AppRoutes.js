@@ -6,7 +6,7 @@ import { Route, Routes } from 'react-router-dom';
 import TechnopediaLogin from './components/Pages/Technopedia/technopedia_login';
 import Technopedia from './components/Pages/Technopedia/technopedia';
 import TechnopediaQuestion from './components/Pages/Technopedia/technopedia-question';
-
+import TechnopediaYear from './components/Pages/Technopedia/technopediaYear';
 
 const AppRoutes = () => {
   return (
@@ -16,7 +16,9 @@ const AppRoutes = () => {
 
 
       <Route path="/technopedia-login" element={<TechnopediaLogin />} />
-      <Route path="/technopedia" element={<Technopedia />} />
+      <Route path="/technopedia/:year/:id/:letter" element={<TechnopediaQuestion />} />
+      <Route path="/technopedia" element={<TechnopediaYear />} />
+      <Route path='/technopedia/:year' element={<Technopedia/>}/>
        </Routes>
   );
 };

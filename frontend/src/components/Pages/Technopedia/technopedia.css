@@ -33,14 +33,20 @@
 /* Header section */
 .header-section {
   position: relative;
-  padding: 40px 0 60px 0;
-  z-index: 3;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  padding: 1rem 0;
+  justify-content: space-around;
+  background-color: #F39C12;
+  width: 100%;
 }
 
 /* Header section when contest is started - add left margin for back button */
-.contest-container.contest-started .header-section {
-  padding-left: 120px; /* Add space for back button */
-}
+/* .contest-container.contest-started .header-section {
+  padding-left: 120px;  */
+/* Add space for back button */
+/* } */
 
 .main-logo-container {
   display: flex;
@@ -49,20 +55,21 @@
   align-items: flex-start;
   /* Changed from center to flex-start */
   position: relative;
-  max-width: 1200px;
+  /* max-width: 1200px;
   height: 200px;
-  padding: 20px;
+  padding: 20px; */
   /* Added padding */
 }
 
 .main-logo1 {
   max-width: 350px;
   /* Reduced from 400px */
+  color: #fff;
   height: auto;
   position: relative;
   z-index: 5;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-  margin-left: 40px;
+  /* margin-left: 40px; */
   /* Added margin instead of left/top */
 }
 
@@ -149,11 +156,37 @@
 
 .question-card.locked {
   cursor: not-allowed;
-  opacity: 0.7;
+  background: linear-gradient(135deg, #fafaf9 0%, #f5f5f5 100%);
+  opacity: 0.85;
+  position: relative;
+}
+
+.question-card.locked::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.02) 10px,
+    rgba(0, 0, 0, 0.02) 20px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.question-card.locked:hover {
+  transform: none;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .question-card.answered {
   border: 3px solid #4caf50;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
 }
 
 .question-header {
@@ -169,8 +202,8 @@
 }
 
 .question-letter {
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 800;
+  font-size: 20px;
   letter-spacing: 0.5px;
 }
 
@@ -180,6 +213,9 @@
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
   backdrop-filter: blur(10px);
 }
 
@@ -211,8 +247,19 @@
 }
 
 .status-badge.locked {
-  background: #f5f5f5;
-  color: #666;
+  background: linear-gradient(135deg, #efefef 0%, #e0e0e0 100%);
+  color: #555;
+  cursor: not-allowed;
+  border: 1px solid #d0d0d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.lock-icon {
+  font-size: 18px;
+  display: inline-block;
+  animation: lockPulse 2s ease-in-out infinite;
 }
 
 .status-badge.answered {
@@ -222,7 +269,8 @@
 
 /* Fix solve button styles */
 .solve-button {
-  background: #8B4513; /* Saddle brown color */
+  background: #8B4513;
+  /* Saddle brown color */
   color: white;
   border: none;
   padding: 12px 24px;
@@ -245,7 +293,8 @@
 .solve-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
-  background: #A0522D; /* Darker brown on hover */
+  background: #A0522D;
+  /* Darker brown on hover */
 }
 
 .solve-button:active {
@@ -275,7 +324,8 @@
 }
 
 .start-button {
-  background: #8B4513; /* Saddle brown color */
+  background: #8B4513;
+  /* Saddle brown color */
   color: white;
   border: none;
   padding: 18px 50px;
@@ -300,7 +350,8 @@
 .start-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(139, 69, 19, 0.4);
-  background: #A0522D; /* Darker brown on hover */
+  background: #A0522D;
+  /* Darker brown on hover */
 }
 
 .start-button:hover::after {
@@ -310,7 +361,8 @@
 /* Start Section */
 .start-section-c {
   grid-column: 2;
-  grid-row: 5; /* Position in the last row */
+  grid-row: 5;
+  /* Position in the last row */
   margin: 10px auto 0 auto;
   text-align: center;
   width: 280px;
@@ -321,7 +373,8 @@
 
 .start-button {
   /* Update button styles */
-  background: #8B4513; /* Saddle brown color */
+  background: #8B4513;
+  /* Saddle brown color */
   color: white;
   border: none;
   padding: 18px 40px;
@@ -345,7 +398,8 @@
 .start-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4);
-  background: #A0522D; /* Darker brown on hover */
+  background: #A0522D;
+  /* Darker brown on hover */
 }
 
 /* Add active state */
@@ -429,25 +483,20 @@
 
 .user-info {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  justify-content: center;
-  gap: 15px;
-  background: white;
-  padding: 15px 30px;
-  border-radius: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  margin: 0 auto 40px;
-  text-align: center;
+  background-color: transparent;
+  padding: 0.8rem 0.8rem;
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+
 }
 
 .user-name {
   font-size: 18px;
   font-weight: 600;
-  color: #745b0b;
+  color: #333;
+
 }
 
 .questions-grid {
@@ -551,6 +600,16 @@
 
 
 
+/* Lock Icon Animation */
+@keyframes lockPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 /* Animations */
 @keyframes pulse {
   0% {
@@ -632,7 +691,8 @@
 
   /* Adjust header spacing for back button on mobile */
   .contest-container.contest-started .header-section {
-    padding-left: 80px; /* Less space on mobile */
+    padding-left: 80px;
+    /* Less space on mobile */
   }
 
   /* Adjust back button position on mobile */
@@ -644,7 +704,7 @@
   }
 
   .main-logo-container {
-    height: 150px;
+    /* height: 150px; */
     padding: 15px;
   }
 
@@ -784,37 +844,94 @@
     padding: 20px;
     margin: 0 10px 30px 10px;
   }
+
   .bird-logo {
     width: 80px;
     bottom: 20px;
     right: 20px;
   }
-  .arc-image{
-     margin-left: 20px;
-     
-       width: 90%;
-  max-width: 800px;
+
+  .arc-image {
+    margin-left: 20px;
+
+    width: 90%;
+    max-width: 800px;
   }
 
 }
 
 /* Add missing TL- prefixed classes that are used in the JavaScript */
 .TL-questions-section-c {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto;
-  gap: 30px;
-  max-width: 1200px;
-  margin: 30px auto;
-  padding: 40px 20px;
-  position: relative;
-  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.TL-question-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.heading-text {
+  font-size: 200%;
+  font-weight: 700;
+}
+
+.heading-card{
+  background-color: #FDFCFB;
+  padding: 1rem 1rem;
+  display: flex;
+  gap: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.heading-card-detail {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+}
+.heading-card-detail{
+    border-right: 1px solid #F39C12;
+}
+.heading-card-detail:nth-child(2){
+    border-right: 1px solid #F39C12;
+}
+.heading-card-detail:last-child{
+    border-right: none;
+}
+
+.heading-card-icon{
+  background-color: #f0f0f0;
+  border:1px solid #d1d5dc;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+}
+
+.heading-card-info p {
+  font-size: 100%;
+  font-weight:500;
+}
+.heading-card-info h1{
+  font-size: 130%;
+  font-weight: 700;
 }
 
 .TL-questions-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto auto auto auto; /* 5 rows: user info + 3 rows of questions + button */
+  grid-template-rows: auto auto auto auto auto auto;
+  /* 6 rows: user info + 3 rows of questions + 1 row for question J + button row */
   gap: 30px;
   max-width: 1200px;
   margin: 30px auto 0 auto;
@@ -826,7 +943,8 @@
 /* Start/End button container positioning */
 .start-section-c {
   grid-column: 2;
-  grid-row: 5; /* Position in the last row */
+  grid-row: 5;
+  /* Position in the last row */
   margin: 10px auto 0 auto;
   text-align: center;
   width: 280px;
@@ -835,14 +953,11 @@
   justify-content: center;
 }
 
-.TL-user-info-grid {
-  grid-column: 1 / span 3;
-  grid-row: 1; /* Position in the first row */
+/* .TL-user-info-grid {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
-}
+} */
 
 .TL-question-wrapper {
   width: 100%;
@@ -988,12 +1103,12 @@
     max-width: 400px;
     padding: 20px 10px 0 10px;
   }
-  
+
   .TL-questions-section-c {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
-  
+
   .start-section-c {
     width: 100%;
     max-width: 280px;
@@ -1007,13 +1122,13 @@
     grid-template-columns: 1fr;
     max-width: 350px;
   }
-  
+
   .TL-questions-grid {
     grid-template-columns: 1fr;
     gap: 20px;
     max-width: 350px;
   }
-  
+
   .TL-question-wrapper {
     width: 100%;
     max-width: 350px;
@@ -1025,7 +1140,8 @@
 .TL-questions-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto auto auto auto auto; /* 6 rows: user info + 3 rows of questions + 1 row for question J + button row */
+  grid-template-rows: auto auto auto auto auto auto;
+  /* 6 rows: user info + 3 rows of questions + 1 row for question J + button row */
   gap: 30px;
   max-width: 1200px;
   margin: 30px auto 0 auto;
@@ -1045,26 +1161,73 @@
 }
 
 /* Questions A-I occupy rows 2-4 */
-.TL-question-wrapper:nth-child(2) { grid-row: 2; grid-column: 1; } /* Question A */
-.TL-question-wrapper:nth-child(3) { grid-row: 2; grid-column: 2; } /* Question B */
-.TL-question-wrapper:nth-child(4) { grid-row: 2; grid-column: 3; } /* Question C */
-.TL-question-wrapper:nth-child(5) { grid-row: 3; grid-column: 1; } /* Question D */
-.TL-question-wrapper:nth-child(6) { grid-row: 3; grid-column: 2; } /* Question E */
-.TL-question-wrapper:nth-child(7) { grid-row: 3; grid-column: 3; } /* Question F */
-.TL-question-wrapper:nth-child(8) { grid-row: 4; grid-column: 1; } /* Question G */
-.TL-question-wrapper:nth-child(9) { grid-row: 4; grid-column: 2; } /* Question H */
-.TL-question-wrapper:nth-child(10) { grid-row: 4; grid-column: 3; } /* Question I */
+.TL-question-wrapper:nth-of-type(1) {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+/* Question A */
+.TL-question-wrapper:nth-of-type(2) {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+/* Question B */
+.TL-question-wrapper:nth-of-type(3) {
+  grid-row: 2;
+  grid-column: 3;
+}
+
+/* Question C */
+.TL-question-wrapper:nth-of-type(4) {
+  grid-row: 3;
+  grid-column: 1;
+}
+
+/* Question D */
+.TL-question-wrapper:nth-of-type(5) {
+  grid-row: 3;
+  grid-column: 2;
+}
+
+/* Question E */
+.TL-question-wrapper:nth-of-type(6) {
+  grid-row: 3;
+  grid-column: 3;
+}
+
+/* Question F */
+.TL-question-wrapper:nth-of-type(7) {
+  grid-row: 4;
+  grid-column: 1;
+}
+
+/* Question G */
+.TL-question-wrapper:nth-of-type(8) {
+  grid-row: 4;
+  grid-column: 2;
+}
+
+/* Question H */
+.TL-question-wrapper:nth-of-type(9) {
+  grid-row: 4;
+  grid-column: 3;
+}
+
+/* Question I */
 
 /* Question J centered in row 5 */
-.TL-question-wrapper:nth-child(11) { 
-  grid-row: 5; 
-  grid-column: 2; 
+.TL-question-wrapper:nth-of-type(10) {
+  grid-row: 5;
+  grid-column: 2;
 }
 
 /* Start/End button container positioned in row 6 */
 .start-section-c {
-  grid-column: 1 / span 3; /* Span all 3 columns */
-  grid-row: 6; /* Position in the last row after question J */
+  grid-column: 1 / span 3;
+  /* Span all 3 columns */
+  grid-row: 6;
+  /* Position in the last row after question J */
   margin: 20px auto 0 auto;
   text-align: center;
   width: 280px;
@@ -1075,7 +1238,8 @@
 
 /* Alternative: If you want the button centered in column 2 only */
 .start-section-c.centered {
-  grid-column: 2; /* Only center column */
+  grid-column: 2;
+  /* Only center column */
   grid-row: 6;
   margin: 20px auto 0 auto;
   text-align: center;
@@ -1094,12 +1258,12 @@
     max-width: 400px;
     padding: 20px 10px 0 10px;
   }
-  
+
   .TL-question-wrapper {
     grid-row: auto !important;
     grid-column: 1 !important;
   }
-  
+
   .start-section-c {
     grid-column: 1 !important;
     grid-row: auto !important;
@@ -1115,7 +1279,7 @@
     gap: 20px;
     max-width: 350px;
   }
-  
+
   .start-section-c {
     grid-column: 1 !important;
     grid-row: auto !important;
@@ -1143,7 +1307,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 30px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .TA-analysis-loading {
@@ -1151,7 +1315,7 @@
   padding: 50px;
   background: white;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1175,7 +1339,7 @@
   background: white;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1184,7 +1348,7 @@
 
 .TA-summary-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
 }
 
 .TA-summary-card.TA-primary {
@@ -1219,7 +1383,7 @@
   font-weight: 600;
   margin-top: 8px;
   padding: 4px 12px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   display: inline-block;
 }
@@ -1243,14 +1407,14 @@
   border-radius: 12px;
   padding: 20px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border-left: 4px solid #e0e0e0;
   transition: all 0.2s ease;
 }
 
 .TA-overview-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 .TA-overview-card.TA-attempted {
@@ -1294,7 +1458,7 @@
   background: white;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease;
   animation: fadeInUp 0.5s ease forwards;
 }
@@ -1362,7 +1526,7 @@
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border-left: 4px solid #e0e0e0;
   animation: fadeInUp 0.5s ease forwards;
 }
@@ -1432,7 +1596,7 @@
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border-left: 4px solid #e0e0e0;
   transition: transform 0.2s ease;
   animation: fadeInUp 0.5s ease forwards;
@@ -1573,7 +1737,7 @@
   border-radius: 16px;
   padding: 30px;
   text-align: center;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
 }
 
@@ -1626,46 +1790,43 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .TA-analysis-container {
-      padding: 20px;
+    padding: 20px;
   }
-  
+
   .TA-analysis-title {
-      font-size: 2rem;
+    font-size: 2rem;
   }
-  
+
   .TA-performance-summary {
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
-  
+
   .TA-performance-metrics {
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
-  
+
   .TA-questions-grid {
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
-  
+
   .TA-insights-grid {
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
-  
+
   .TA-question-scores {
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
 /* Animation */
 @keyframes fadeInUp {
   from {
-      opacity: 0;
-      transform: translateY(20px);
+    opacity: 0;
+    transform: translateY(20px);
   }
+
   to {
-      opacity: 1;
-      transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
-
-
-
-

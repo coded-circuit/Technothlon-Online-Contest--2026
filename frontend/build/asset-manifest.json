@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/static/css/main.92d9267e.css",
+    "main.js": "/static/js/main.92cd6de0.js",
+    "static/media/bird_logo1.png": "/static/media/bird_logo1.a2b75bcaaa452c519859.png",
+    "static/media/techno_contest.png": "/static/media/techno_contest.79050a32848a78c66dc3.png",
+    "static/media/coin.png": "/static/media/coin.fd61490a0d8f085f2c4e.png",
+    "static/media/arc.png": "/static/media/arc.7a0a9083c322f28bee1d.png",
+    "static/media/readingbook.png": "/static/media/readingbook.75126336150b1595d1fb.png",
+    "static/media/school.png": "/static/media/school.e3a187223a4407cef519.png",
+    "index.html": "/index.html",
+    "main.92d9267e.css.map": "/static/css/main.92d9267e.css.map",
+    "main.92cd6de0.js.map": "/static/js/main.92cd6de0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.92d9267e.css",
+    "static/js/main.92cd6de0.js"
+  ]
+}
