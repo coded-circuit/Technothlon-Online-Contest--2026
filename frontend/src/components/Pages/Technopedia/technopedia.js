@@ -674,7 +674,7 @@ function Contest() {
                 </div>
 
                 {/* Performance Summary */}
-                <div className="TA-performance-summary">
+                {/* <div className="TA-performance-summary">
                     <div className="TA-summary-card TA-primary">
                         <div className="TA-summary-icon">{performanceLevel.icon}</div>
                         <div className="TA-summary-content">
@@ -703,7 +703,7 @@ function Contest() {
                             <div className="TA-summary-sub">{analysisData.attemptedQuestions}/{analysisData.totalQuestions}</div>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Overview Cards */}
                 <div className="TA-analysis-overview">
