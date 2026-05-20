@@ -509,30 +509,21 @@ function Contest() {
 
         const circumference = Math.PI * radius;
 
-        const progress = (40 / 100) * circumference;
-
+        const progress = (analysisData.collectiveScore / 100) * circumference;
         return (
             <div className="TA-analysis-container">
                 <h2 className="TA-analysis-title">🔬 TechnoAnalysis Report</h2>
-            <div style={{display:"flex"}}>
-                <div style={{height:"300px",
-                    background:"linear-gradient(to right, #a03bff, #7700c6)",
-                    width:"660px",
-                    borderRadius:"16px",
-                    padding:"10px 50px 10px 10px",
-                    display:"flex",
-                    justifyContent:"space-between",
-                    marginRight:"20px"}}>
+                <div className="TA-score-card">
+                    <div className="TA-score-meter" >
+                        <span style={{ textAlign: "center" }}>
+                            <svg
+                            width="340"
+                            height="220"
+                            viewBox="0 0 220 120"
+                            >
 
-                    <span style={{ textAlign: "center" }}>
-                        <svg
-                        width="340"
-                        height="220"
-                        viewBox="0 0 220 120"
-                        >
-
-                            {/* Background Arc */}
-                             <path
+                                {/* Background Arc */}
+                                <path
                                 d="
                                     M 20 100
                                     A 90 90 0 0 1 200 100
@@ -543,7 +534,7 @@ function Contest() {
                                 strokeLinecap=""
                                 />
 
-                            {/* Progress Arc */}
+                                {/* Progress Arc */}
                                 <path
                                 d="
                                     M 20 100
@@ -570,7 +561,7 @@ function Contest() {
                                 fontWeight="bold"
                                 fill="white"
                                 >
-                                0/1000
+                                {analysisData.collectiveScore}/1000
                                 </text>
                                 <br></br>
                                 <text
@@ -584,197 +575,77 @@ function Contest() {
                                 Overall Score
                                 </text>
 
-                        </svg>
-                    </span>
-                    <div >
-                        <span style={{display:"block", marginBotton:"10px"
-                        }}>
-                            <p style={{color:"white"}}>⏱️ Time taken</p>
-                            <h1 style={{color:"white",
-                                fontSize:"50px",
-                                fontWeight:"900"
-                            }}>3h 2m</h1>
-                            <p  style={{color:"#e1e1e1",
-                                fontSize:"15px",
-                                fontWeight:"400",
-                                marginTop:"4px",
-                           
-                            }}>15 min/Q</p>
+                            </svg>
                         </span>
-                        <hr ></hr>
-                        <span style={{display:"block"}}>
-                            <p style={{color:"white"}}>✅ Completion rate</p>
-                            <h1 style={{color:"white",
-                            fontSize:"50px",
-                            fontWeight:"900"
-                            }}>10%</h1>
-                            <p style={{color:"white"}}>4/10</p>
+                    <div className="TA-scorecard-analysis-box">
+                        <span className="TA-scorecard-analysis">
+                            <p>⏱️ Time taken</p>
+                            <h1 >{analysisData.totalContestTime}</h1>
+                            <h2 >Avg: {analysisData.averageTimePerQuestion} min/Q</h2>
+                        </span>
+                        <hr></hr>
+                        <span className="TA-scorecard-analysis">
+                            <p >✅ Completion rate</p>
+                            <h1 >{analysisData.completionRate}</h1>
+                            <h2>{analysisData.attemptedQuestions}/{analysisData.totalQuestions}</h2>
                         </span>  
                     </div>
-                   
-
                 </div>
 
-                <div style={{width:"520px",
-                    height:"300px",
-                    border:"2px solid white",
-                    borderRadius:"16px",
-                    background:"white",}}>
-                    <div style={{width:"470px",
-                        height:"50px",
-                        borderRadius:"10px",
-                        borderLeft:"7px solid blue",
-                        margin:"20px",
-                        boxShadow: "0 0 5px blue",
-                        padding:"10px"
-                    }}> Attempted</div>
-                    <div style={{width:"470px",
-                        height:"50px",
-                        borderRadius:"10px",
-                        borderLeft:"7px solid green",
-                        margin:"20px",
-                        boxShadow: "0 0 5px green",
-                        padding:"10px"
-                    }}>Correct</div>
-                    <div style={{width:"470px",
-                        height:"50px",
-                        borderRadius:"10px",
-                        borderLeft:"7px solid red",
-                        margin:"20px",
-                        boxShadow: "0 0 5px red",
-                        padding:"10px"
-                    }}>Wrong</div>
-                    <div style={{width:"470px",
-                        height:"50px",
-                        borderRadius:"10px",
-                        borderLeft:"7px solid orange",
-                        margin:"20px",
-                        boxShadow: "0 0 5px orange",
-                        padding:"10px",
-                        display:"flex",
-                        justifyContent:"space-between"
-                    }}>
-                        <div>Unattempted</div>
-                        <div style={{fontWeight:"700",
-                            fontSize:"20px"
-                        }}>3</div>
+                <div className="TA-question-summary-card">
+                    <div className="TA-question-summary-box blue">
+                        <div>Attempted</div>
+                        <div className="TA-question-summary-value">{analysisData.attemptedQuestions}</div>
                     </div>
-                    
+                    <div className="TA-question-summary-box green">
+                        <div>Correct</div>
+                        <div className="TA-question-summary-value">{analysisData.correctAnswers}</div>
+                    </div>
+                    <div className="TA-question-summary-box red">
+                        <div>Wrong</div>
+                        <div className="TA-question-summary-value">{analysisData.wrongAnswers}</div>
+                    </div>
+                    <div className="TA-question-summary-box orange">
+                        <div>Unattempted</div>
+                        <div className="TA-question-summary-value">{analysisData.unattemptedQuestions}</div>
+                    </div>
                 </div>
             </div>
+    
 
 
-
-
-                {/* Performance Summary
-                <div className="TA-performance-summary">
-                    <div className="TA-summary-card TA-primary">
-                        <div className="TA-summary-icon">{performanceLevel.icon}</div>
-                        <div className="TA-summary-content">
-                            <div className="TA-summary-value">{analysisData.collectiveScore}/100</div>
-                            <div className="TA-summary-label">Overall Score</div>
-                            <div className="TA-summary-category" style={{ color: performanceLevel.color }}>
-                                {analysisData.performanceCategory}
+                <div className="TA-metrics-insights">
+                    <div>
+                        <div className="TA-metrics-label">Performance Metrics</div>
+                        <div className="TA-performance-metrics-card">
+                            <div className="TA-metrics">
+                                    {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
+                                    <div key={index} style={{display:"flex",margin:"25px",justifyItems:"space-between",alignItems:"center"}}>
+                                        <div >
+                                            <span >{metricIcons[metricKey]}</span>
+                                            <span >{metricTitles[metricKey]}</span>
+                                        </div>
+                                        <div className="TA-metrics-progressbar-bg">
+                                            <div className="TA-metrics-progressbar-fg" style={{
+                                                            width: metricKey === 'averageTIQ'
+                                                                ? `${analysisData[metricKey] / 150 * 100}%`
+                                                                : `${analysisData[metricKey]}%`
+                                                            }}/>
+                                        </div>
+                                        <div className='TA-metrics-values'>
+                                            {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
+                                        </div>
+                                        <div >
+                                            <div
+                                                style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    ))}
                             </div>
                         </div>
                     </div>
-    
-                    <div className="TA-summary-card">
-                        <div className="TA-summary-icon">⏱️</div>
-                        <div className="TA-summary-content">
-                            <div className="TA-summary-value">{analysisData.totalContestTime}m</div>
-                            <div className="TA-summary-label">Total Time</div>
-                            <div className="TA-summary-sub">Avg: {analysisData.averageTimePerQuestion}m/Q</div>
-                        </div>
-                    </div>
-    
-                    <div className="TA-summary-card">
-                        <div className="TA-summary-icon">✅</div>
-                        <div className="TA-summary-content">
-                            <div className="TA-summary-value">{analysisData.completionRate}%</div>
-                            <div className="TA-summary-label">Completion Rate</div>
-                            <div className="TA-summary-sub">{analysisData.attemptedQuestions}/{analysisData.totalQuestions}</div>
-                        </div>
-                    </div>
-                </div> */}
-    
-                {/* Overview Cards
-                <div className="TA-analysis-overview">
-                    <div className="TA-overview-card TA-attempted">
-                        <div className="TA-overview-number">{analysisData.attemptedQuestions}</div>
-                        <div className="TA-overview-label">Attempted</div>
-                    </div>
-                    <div className="TA-overview-card TA-correct">
-                        <div className="TA-overview-number">{analysisData.correctAnswers}</div>
-                        <div className="TA-overview-label">Correct</div>
-                    </div>
-                    <div className="TA-overview-card TA-wrong">
-                        <div className="TA-overview-number">{analysisData.wrongAnswers}</div>
-                        <div className="TA-overview-label">Wrong</div>
-                    </div>
-                    <div className="TA-overview-card TA-unattempted">
-                        <div className="TA-overview-number">{analysisData.unattemptedQuestions}</div>
-                        <div className="TA-overview-label">Unattempted</div>
-                    </div>
-                </div> */}
-    
 
-
-                <div style={{marginTop:"20px",display:"flex",justifyContent:"space-between"}}>
-                    <div>
-                    <div style={{fontSize:"25px",margin:"15px"}}>Performance Metrics</div>
-                    <div style={{width:"600px",
-                        height:"380px",
-                        borderRadius:"16px",
-                        backgroundColor:"white",
-                        fontSize:"16px",
-                        padding:"25px"
-                    }}>
-                        <div style={{color:"black",
-                            fontSize:"18px",
-                            fontWeight:"600",
-                            }}>
-                                {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
-
-                                <div key={index} style={{display:"flex",margin:"25px",justifyItems:"space-between",alignItems:"center"}}>
-                                    <div >
-                                        <span >{metricIcons[metricKey]}</span>
-                                        <span >{metricTitles[metricKey]}</span>
-                                    </div>
-                                <div
-                                    style={{
-                                        width: "300px",
-                                        height: "7px",
-                                        backgroundColor: "#ddd",
-                                        borderRadius: "10px",
-                                        overflow: "hidden",
-                                        position:"absolute",
-                                        left:"230px"
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                        width: `${30}%`,
-                                        height: "100%",
-                                        backgroundColor: "#00975a",
-                                        transition: "0.5s"
-                                        }}
-                                    />
-                                </div>
-                                <div style={{position:"absolute",left:"540px"}}>
-                                    {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
-                                </div>
-
-                                <div >
-                                    <div
-                                        style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
-                                    ></div>
-                                </div>
-                        </div>
-                    ))}
-                        </div>
-                    </div>
-                    </div>
                     <div style={{marginRight:"20px"}}>
                             {analysisData.insights && (
                     <div className="TA-insights-section">
@@ -800,72 +671,51 @@ function Contest() {
                      )}
                     </div>
                 </div>
-                {/* Performance Metrics
-                <div className="TA-performance-metrics">
-                    {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
-                        <div key={index} className="TA-metric-card">
-                            <div className="TA-metric-header">
-                                <span className="TA-metric-icon">{metricIcons[metricKey]}</span>
-                                <span className="TA-metric-title">{metricTitles[metricKey]}</span>
-                            </div>
-                            <div className="TA-metric-value">
-                                {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
-                            </div>
-                            <div className="TA-metric-bar">
-                                <div
-                                    className="TA-metric-progress"
-                                    style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    ))}
-                </div> */}
-    
-                {/* Insights Section */}
-                
-    
-                {/* Question-wise Analysis */}
+
                 <div className="TA-question-analysis">
                     <h3>📊 Question-wise Performance</h3>
-                    <div className="TA-questions-grid">
-                        {analysisData.questionAnalysis.map((question, index) => (
-                            <div key={index} className={`TA-question-card TA-${question.status}`}>
-                                <div className="TA-question-header">
-                                    <span className="TA-question-number">Q{question.questionId}</span>
-                                    <span className={`TA-status-badge TA-${question.status}`}>
-                                        {statusIcons[question.status]}
-                                    </span>
-                                    <span className="TA-question-grade">{question.grade}</span>
-                                </div>
-                                <div className="TA-question-metrics">
-                                    <div className="TA-metric-row">
-                                        <span className="TA-metric-label">⏱ Time:</span>
-                                        <span className="TA-metric-value">{question.timeSpent}m</span>
-                                    </div>
-                                    <div className="TA-metric-row">
-                                        <span className="TA-metric-label">👁 Visits:</span>
-                                        <span className="TA-metric-value">{question.visitCount}</span>
-                                    </div>
-                                    <div className="TA-metric-row">
-                                        <span className="TA-metric-label">📝 Attempts:</span>
-                                        <span className="TA-metric-value">{question.submissionCount}</span>
-                                    </div>
-                                </div>
-                                <div className="TA-question-scores">
-                                    {['confidence', 'tiq', 'efficiency', 'consistency'].map((scoreKey, idx) => (
-                                        <div key={idx} className="TA-score-item">
-                                            <span className="TA-score-label">{scoreLabels[scoreKey]}: </span>
-                                            <span className="TA-score-value">{question[scoreKey]}{scoreKey === 'tiq' ? '/150' : '/100'}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="TA-correct-answer">
-                                    <span className="TA-answer-label">Correct Answer:</span>
-                                    <span className="TA-answer-value">{question.correctAnswer}</span>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="TA-question-analysis-box">
+                    <div className="TA-question-analysis-headers">
+                        <div>Questions</div>
+                        <hr></hr>
+                        <div>⏱ Time</div>
+                        <hr></hr>
+                        <div>👁 Visits</div>
+                        <hr></hr>
+                        <div>📝 Attempts</div>
+                        <hr></hr>
+                        <div>Confidence</div>
+                        <hr></hr>
+                        <div>TIQ</div>
+                        <hr></hr>
+                        <div>Efficiency</div>
+                        <hr></hr>
+                        <div>Consistency</div>
+                        <hr></hr>
+                        <div>Correct Answer</div>
                     </div>
+                    <div className="scrollBox">
+                    {analysisData.questionAnalysis.map((question,index)=>(
+                        <div key={index} className="TA-question-analysis-values" >
+                            <div>Q{question.questionId}</div>
+                            <hr></hr>
+                            <div>{question.timeSpent}</div>
+                            <hr></hr>
+                            <div>{question.visitCount}</div>
+                            <hr></hr>
+                            <div>{question.submissionCount}</div>
+                            <hr></hr>
+                            {['confidence', 'tiq', 'efficiency', 'consistency'].map((scoreKey, idx) => (
+                                <><div key={idx}>{question[scoreKey]}</div><hr></hr></>
+                            ))
+                            }
+                            <div>{question.correctAnswer}</div>
+                        </div>
+                    ))}
+                    </div>
+                    
+                    
+                </div>
                 </div>
     
                 {/* Final Score */}
@@ -906,11 +756,34 @@ function Contest() {
         navigate('/technopedia-login', { replace: true });
     };
 
+    
+  const lastScrollY = useRef(0);
+  const [showButton, setShowButton] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > lastScrollY.current) {
+        setShowButton(false);
+      } else {
+        setShowButton(true);
+      }
+
+      lastScrollY.current = window.scrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+
     return (
-        <div className={`contest-container ${contestStarted ? 'contest-started' : ''}`}>
+        <div className={`contest-container ${contestStarted ? 'contest-started' : ''}`} >
             {/* Back button for contest */}
             {contestStarted && (
-                <Button
+                showButton  && <Button
                     variant="outlined"
                     startIcon={<ArrowBackIcon />}
                     onClick={handleBack}
@@ -920,7 +793,7 @@ function Contest() {
                 </Button>
             )}
             
-            <div className="header-section">
+            <div className="header-section" >
                 <div className="main-logo-container">
                     <img src={starLogo} alt="" className="star-logo" />
                     <img src={technoLogo} alt="Technothlon" className="main-logo1" />

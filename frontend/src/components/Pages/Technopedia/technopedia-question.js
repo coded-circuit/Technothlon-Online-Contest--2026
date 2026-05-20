@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./question.css";
@@ -199,10 +199,38 @@ function TechnopediaQuestion() {
     }
   };
 
+//back button handling
+ const [showButton, setShowButton] = useState(true);
+
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+
+    const handleScroll = () => {
+
+      if (window.scrollY > lastScrollY.current) {
+        // scrolling down
+        setShowButton(false);
+      } else {
+        // scrolling up
+        setShowButton(true);
+      }
+
+      lastScrollY.current = window.scrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+
+  }, []);
+
   return (
     <div className="technopedia-question-container">
       <div className="technopedia-question-header">
-        <button className="technopedia-back-button" onClick={handleBack}>
+        <button className="technopedia-back-button" onClick={handleBack} style={{opacity:showButton?1:0}}>
           <span>←</span> Back
         </button>
       </div>
