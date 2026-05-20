@@ -26,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 // Define allowed origins
 const allowedOrigins = [
   'http://localhost:3000',  // React dev server
+  'http://localhost:4000',
   'http://localhost:3001',  // Backend server
   'http://localhost:5173',  // Vite default
   'https://technothlon.techniche.org.in',

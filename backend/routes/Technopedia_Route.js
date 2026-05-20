@@ -62,6 +62,7 @@ router.get('/test-db', async (req, res) => {
 const checkModelForStudent = async (Model, rollNumber, secondValue, type) => {
     const student = await Model.findOne({ rollNumber: rollNumber });
     console.log(student);
+    console.log(student);
     if (!student) return null;
 
     // Check matches for Contact
@@ -110,6 +111,7 @@ router.post('/check-student', async (req, res) => {
         // 1. Check Offline26 (New Batch First)
         let result = await checkModelForStudent(Offline26, cleanRollNumber, cleanSecond, "offline");
         console.log(result);
+        console.log(result);
         if (result) return res.json(result);
 
         // // 2. Check Online26
@@ -143,6 +145,7 @@ router.post('/check-student', async (req, res) => {
 
 // Start contest
 router.post('/techno/start', async (req, res) => {
+    console.log("in start");
     console.log("in start");
     try {
         const { phone, name, school, studentType } = req.body;
@@ -847,10 +850,14 @@ router.post('/techno/end', async (req, res) => {
 // Get contest times - Remove time limits
 router.get('/techno/times', async (req, res) => {
 
+
     try {
         const { phone, sessionId } = req.query;
 
         // Get global contest schedule
+        // const technoSchedule = await Technopedia.findOne()
+        //     .sort({ createdAt: -1 })
+        //     .select('startTime endTime');
         // const technoSchedule = await Technopedia.findOne()
         //     .sort({ createdAt: -1 })
         //     .select('startTime endTime');
@@ -935,9 +942,9 @@ router.get('/techno/dates', async (req, res) => {
             endTime: new Date('2027-05-10T18:00:00')
         };
 
-        // Convert times to IST
-        const istStartTime = convertToIST(technoSchedule.startTime);
-        const istEndTime = convertToIST(technoSchedule.endTime);
+    // Convert times to IST
+    const istStartTime = convertToIST(technoSchedule.startTime);
+    const istEndTime = convertToIST(technoSchedule.endTime);
 
         res.json({
             startTime: istStartTime.toISOString(),

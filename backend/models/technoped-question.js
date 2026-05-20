@@ -7,7 +7,6 @@ const technopediaQuestionSchema = mongoose.Schema({
     content: { type: String, required: true },
     answer: { type: Number, required: true },
     points: { type: Number, required: true }
-
 });
 
 const technopediaSchema = mongoose.Schema({

@@ -523,10 +523,155 @@ function Contest() {
         };
 
         const performanceLevel = getPerformanceLevel(analysisData.collectiveScore);
+        const radius = 90;
+        const strokeWidth = 20;
+        const circumference = Math.PI * radius;
+        const progress = (40 / 100) * circumference;
 
         return (
             <div className="TA-analysis-container">
                 <h2 className="TA-analysis-title">🔬 TechnoAnalysis Report</h2>
+
+                <div style={{ display: "flex" }}>
+                    <div style={{
+                        height: "300px",
+                        background: "linear-gradient(to right, #810eed, #7700c6)",
+                        width: "600px",
+                        borderRadius: "16px",
+                        padding: "10px 50px 10px 10px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginRight: "20px"
+                    }}>
+                        <span style={{ textAlign: "center" }}>
+                            <svg
+                                width="340"
+                                height="220"
+                                viewBox="0 0 220 120"
+                            >
+                                {/* Background Arc */}
+                                <path
+                                    d="
+                                        M 20 100
+                                        A 90 90 0 0 1 200 100
+                                    "
+                                    fill="none"
+                                    stroke="#ffffff"
+                                    strokeWidth={strokeWidth}
+                                    strokeLinecap=""
+                                />
+
+                                {/* Progress Arc */}
+                                <path
+                                    d="
+                                        M 20 100
+                                        A 90 90 0 0 1 200 100
+                                    "
+                                    fill="none"
+                                    stroke="#1aff8d"
+                                    strokeWidth={strokeWidth}
+                                    strokeLinecap=""
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={circumference - progress}
+                                    style={{
+                                        transition: "0.5s ease",
+                                        filter: "drop-shadow(0px 0px 1px #00eb6a)"
+                                    }}
+                                />
+
+                                {/* Marks Text */}
+                                <text
+                                    x="110"
+                                    y="82"
+                                    textAnchor="middle"
+                                    fontSize="20"
+                                    fontWeight="bold"
+                                    fill="white"
+                                >
+                                    0/1000
+                                </text>
+                                <br></br>
+                                <text
+                                    x="110"
+                                    y="100"
+                                    textAnchor="middle"
+                                    fontSize="9"
+                                    fontWeight="bold"
+                                    fill="white"
+                                >
+                                    Overall Score
+                                </text>
+                            </svg>
+                        </span>
+                        <div>
+                            <span style={{ display: "block", marginBotton: "10px" }}>
+                                <p style={{ color: "white" }}>⏱️ Time taken</p>
+                                <h1 style={{
+                                    color: "white",
+                                    fontSize: "50px",
+                                    fontWeight: "900"
+                                }}>3h 2m</h1>
+                                <p style={{
+                                    color: "#e1e1e1",
+                                    fontSize: "15px",
+                                    fontWeight: "400",
+                                    marginTop: "4px",
+                                }}>15 min/Q</p>
+                            </span>
+                            <hr></hr>
+                            <span style={{ display: "block" }}>
+                                <p style={{ color: "white" }}>✅ Completion rate</p>
+                                <h1 style={{
+                                    color: "white",
+                                    fontSize: "50px",
+                                    fontWeight: "900"
+                                }}>10%</h1>
+                                <p style={{ color: "white" }}>4/10</p>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style={{
+                        width: "350px",
+                        height: "300px",
+                        border: "2px solid white",
+                        borderRadius: "16px",
+                        background: "white",
+                    }}>
+                        <div style={{
+                            width: "300px",
+                            height: "50px",
+                            borderRadius: "10px",
+                            borderLeft: "7px solid blue",
+                            margin: "20px",
+                            boxShadow: "0 0 10px gray"
+                        }}> Attempted</div>
+                        <div style={{
+                            width: "300px",
+                            height: "50px",
+                            borderRadius: "10px",
+                            borderLeft: "7px solid green",
+                            margin: "20px",
+                            boxShadow: "0 0 10px gray"
+                        }}>Correct</div>
+                        <div style={{
+                            width: "300px",
+                            height: "50px",
+                            borderRadius: "10px",
+                            borderLeft: "7px solid red",
+                            margin: "20px",
+                            boxShadow: "0 0 10px gray"
+                        }}>Wrong</div>
+                        <div style={{
+                            width: "300px",
+                            height: "50px",
+                            borderRadius: "10px",
+                            borderLeft: "7px solid orange",
+                            margin: "20px",
+                            boxShadow: "0 0 10px gray"
+                        }}>Unattempted</div>
+                    </div>
+                </div>
 
                 {/* Performance Summary */}
                 <div className="TA-performance-summary">
