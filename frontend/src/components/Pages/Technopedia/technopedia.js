@@ -882,7 +882,9 @@ function Contest() {
                         style={{
                             display: "flex",
                             alignItems: "flex-start",
-                            gap: "12px"
+                            gap: "12px",
+                            borderBottom: "1px solid #e5e7eb",
+                            paddingBottom: "12px"
                         }}
                     >
 
