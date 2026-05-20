@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Technopedia=require('../models/technoped-question')
-const TechnoScore=require('../models/technopedia_user')
+const Technopedia = require('../models/technoped-question')
+const TechnoScore = require('../models/technopedia_user')
 const crypto = require('crypto');
 const { convertToIST } = require('../utils/timeUtils');
-const Offline26=require('../models/offline26');
+const Offline26 = require('../models/offline26');
 
 
 router.get('/test-db', async (req, res) => {
@@ -36,24 +36,24 @@ router.get('/test-db', async (req, res) => {
                 total: 0
             }
         });
-         
+
         const savedDoc = await testDoc.save();
         console.log('Test document saved:', savedDoc._id);
-        
+
         // Delete the test document
         await TechnoScore.findByIdAndDelete(savedDoc._id);
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: 'Database connection working',
-            testId: savedDoc._id 
+            testId: savedDoc._id
         });
     } catch (error) {
         console.error('Database test error:', error);
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: 'Database connection failed',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -61,6 +61,7 @@ router.get('/test-db', async (req, res) => {
 // Helper function to check a specific database model
 const checkModelForStudent = async (Model, rollNumber, secondValue, type) => {
     const student = await Model.findOne({ rollNumber: rollNumber });
+    console.log(student);
     console.log(student);
     if (!student) return null;
 
@@ -95,7 +96,7 @@ const checkModelForStudent = async (Model, rollNumber, secondValue, type) => {
 router.post('/check-student', async (req, res) => {
     try {
         const { rollNumber, second } = req.body;
-        
+
         // Validation
         if (!rollNumber || !second) {
             return res.status(400).json({ exists: false, message: "Missing Roll Number or Contact/Email" });
@@ -109,6 +110,7 @@ router.post('/check-student', async (req, res) => {
 
         // 1. Check Offline26 (New Batch First)
         let result = await checkModelForStudent(Offline26, cleanRollNumber, cleanSecond, "offline");
+        console.log(result);
         console.log(result);
         if (result) return res.json(result);
 
@@ -125,9 +127,9 @@ router.post('/check-student', async (req, res) => {
         // if (result) return res.json(result);
 
         // If no match found in any DB
-        return res.json({ 
-            exists: false, 
-            message: "Student not found or details do not match." 
+        return res.json({
+            exists: false,
+            message: "Student not found or details do not match."
         });
 
     } catch (error) {
@@ -138,17 +140,21 @@ router.post('/check-student', async (req, res) => {
 
 
 
+
+
+
 // Start contest
 router.post('/techno/start', async (req, res) => {
     console.log("in start");
+    console.log("in start");
     try {
         const { phone, name, school, studentType } = req.body;
-        
+
         console.log('Received start request:', { phone, name, school, studentType });
-        
+
         if (!phone || !name || !school || !studentType) {
-            return res.status(400).json({ 
-                message: 'Phone number, name, school and student type are required' 
+            return res.status(400).json({
+                message: 'Phone number, name, school and student type are required'
             });
         }
 
@@ -166,7 +172,7 @@ router.post('/techno/start', async (req, res) => {
         // Don't clean the phone number, use it as is
         const cleanPhone = phone.trim();
         console.log('Phone cleaning:', { original: phone, cleaned: cleanPhone });
-        
+
         // (No need to check for existingContest anymore, since we just deleted all)
 
         console.log('Creating contest for student type:', studentType);
@@ -198,9 +204,9 @@ router.post('/techno/start', async (req, res) => {
                 total: 0
             }
         });
-        
+
         console.log('Contest object created:', contest);
-        
+
         // Generate session token
         const sessionToken = crypto.randomBytes(32).toString('hex');
         contest.sessionId = sessionToken;
@@ -209,8 +215,8 @@ router.post('/techno/start', async (req, res) => {
         const savedContest = await contest.save();
         console.log('Contest saved successfully:', savedContest._id);
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: 'Contest started successfully',
             startTime: contest.startTime.toISOString(),
             endTime: null, // No time limit
@@ -221,31 +227,31 @@ router.post('/techno/start', async (req, res) => {
     } catch (error) {
         console.error('Contest start error:', error);
         console.error('Error stack:', error.stack);
-        
+
         // Check if it's a validation error
         if (error.name === 'ValidationError') {
             console.error('Validation errors:', error.errors);
-            return res.status(400).json({ 
-                success: false, 
+            return res.status(400).json({
+                success: false,
                 message: 'Validation error',
                 details: Object.values(error.errors).map(err => err.message)
             });
         }
-        
+
         // Check if it's a duplicate key error
         if (error.code === 11000) {
             console.error('Duplicate key error:', error.keyValue);
-            return res.status(400).json({ 
-                success: false, 
+            return res.status(400).json({
+                success: false,
                 message: 'This phone number has already participated in the contest',
                 details: 'Duplicate phone number'
             });
         }
-        
-        res.status(500).json({ 
-            success: false, 
+
+        res.status(500).json({
+            success: false,
             message: 'Error starting contest',
-            details: error.message 
+            details: error.message
         });
     }
 });
@@ -260,17 +266,17 @@ router.post('/submit', async (req, res) => {
 
         let technoScore = await TechnoScore.findOne({ phone: phone.trim() });
         console.log('Found contest:', technoScore ? 'Yes' : 'No');
-        
+
         if (!technoScore) {
             // Try to find all contests to debug
             const allContests = await TechnoScore.find({}).select('phone name _id');
             console.log('All contests in database:', allContests);
-            
+
             // Try searching with original phone number
             console.log('Trying with original phone:', phone);
             technoScore = await TechnoScore.findOne({ phone });
             console.log('Found contest with original phone:', technoScore ? 'Yes' : 'No');
-            
+
             if (!technoScore) {
                 return res.status(404).json({ message: 'Contest not found' });
             }
@@ -279,7 +285,7 @@ router.post('/submit', async (req, res) => {
         // Get question from contest model
         const technopedia = await Technopedia.findOne().sort({ createdAt: -1 });
         const question = technopedia.questions.find(q => q.questionId === questionId);
-        
+
         if (!question) {
             return res.status(404).json({ message: 'Question not found' });
         }
@@ -290,61 +296,61 @@ router.post('/submit', async (req, res) => {
             correctAnswer: question.answer,
             questionId: questionId
         });
-        
+
         const submittedAnswer = String(answer).toLowerCase().trim();
         const correctAnswer = String(question.answer).toLowerCase().trim();
         const isCorrect = submittedAnswer === correctAnswer;
-        
+
         console.log('Processed answers:', {
             submittedAnswer,
             correctAnswer,
             isCorrect
         });
-        
+
         // Calculate total time spent and visit count
         const totalTimeSpent = timeSpentArray.reduce((sum, time) => sum + time, 0);
         const visitCount = timeSpentArray.length;
-        
+
         // Calculate score
         let score;
         if (isCorrect) {
-            switch(questionId) {
-                case 1: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+            switch (questionId) {
+                case 1:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 2: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
-                break;
-                case 3: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 2:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 4: 
-                   score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 3:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 5: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 4:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 6: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 5:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 7: 
-                     score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 6:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 8: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 7:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 9: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 8:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                case 10: 
-                    score = Math.max(0, 300 - (totalTimeSpent/20000)); 
+                case 9:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
                     break;
-                default: 
+                case 10:
+                    score = Math.max(0, 300 - (totalTimeSpent / 20000));
+                    break;
+                default:
                     score = 0;
             }
         } else {
             // Negative score for wrong answers
-            score = -(totalTimeSpent/20000);
+            score = -(totalTimeSpent / 20000);
         }
 
         // Create new answer
@@ -362,24 +368,24 @@ router.post('/submit', async (req, res) => {
 
         // Check if answer already exists for this question
         const existingAnswerIndex = technoScore.answers.findIndex(a => a.questionId === questionId);
-        
+
         console.log('Submit - existing answer found:', existingAnswerIndex !== -1);
-        
+
         if (existingAnswerIndex !== -1) {
             // Get the existing answer to preserve submission count
             const existingAnswer = technoScore.answers[existingAnswerIndex];
             console.log('Submit - previous submission count:', existingAnswer.submissionCount);
-            
+
             // Increment submission count
             newAnswer.submissionCount = (existingAnswer.submissionCount || 1) + 1;
             console.log('Submit - new submission count:', newAnswer.submissionCount);
-            
+
             // Remove the existing answer completely
             technoScore.answers.splice(existingAnswerIndex, 1);
         } else {
             console.log('Submit - first submission, count set to 1');
         }
-        
+
         // Add the new answer (this replaces the previous one completely)
         technoScore.answers.push(newAnswer);
 
@@ -389,9 +395,9 @@ router.post('/submit', async (req, res) => {
 
         // Update question score in scores object
         technoScore.scores[`question${questionId}`] = Math.round(score);
-        
+
         // Calculate total score
-       technoScore.scores.total = technoScore.answers.reduce((total, ans) => total + ans.score, 0);
+        technoScore.scores.total = technoScore.answers.reduce((total, ans) => total + ans.score, 0);
 
         // Save all changes
         await technoScore.save();
@@ -399,7 +405,7 @@ router.post('/submit', async (req, res) => {
         // Get the current answer
         const currentAnswer = technoScore.answers.find(a => a.questionId === questionId);
         console.log('Submit - final submission count in response:', currentAnswer.submissionCount);
-        
+
         // Send response with updated scores
         res.json({
             success: true,
@@ -434,7 +440,7 @@ router.post('/submit', async (req, res) => {
 router.get('/analysis/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
-        
+
         const technoScore = await TechnoScore.findOne({ phone: phone.trim() });
         if (!technoScore) {
             return res.status(404).json({ message: 'Contest not found' });
@@ -444,41 +450,41 @@ router.get('/analysis/:phone', async (req, res) => {
         const totalQuestions = 10;
         const attemptedQuestions = technoScore.answers.length;
         const unattemptedQuestions = totalQuestions - attemptedQuestions;
-        
+
         const correctAnswers = technoScore.answers.filter(a => a.isCorrect).length;
         const wrongAnswers = technoScore.answers.filter(a => !a.isCorrect && a.attempted).length;
-        
+
         // Enhanced accuracy calculation with weighted scoring
         const accuracy = attemptedQuestions > 0 ? Math.round((correctAnswers / attemptedQuestions) * 100) : 0;
         const completionRate = Math.round((attemptedQuestions / totalQuestions) * 100);
-        
+
         // Get questions from Technopedia
         const technopedia = await Technopedia.findOne().sort({ createdAt: -1 });
         const questions = technopedia ? technopedia.questions : [];
-        
+
         // Enhanced question analysis with multiple performance indicators
         let totalConfidence = 0;
         let totalTIQ = 0;
         let totalEfficiency = 0;
         let totalConsistency = 0;
-        
+
         const questionAnalysis = technoScore.answers.map(answer => {
             const timeInMinutes = Math.floor(answer.totalTimeSpent / (1000 * 60));
             const visitCount = answer.visitCount;
             const submissionCount = answer.submissionCount || 1;
-            
+
             // Enhanced Confidence Score (0-100)
             let confidence = 0;
             if (answer.isCorrect) {
                 // Base confidence from correct answer
                 const baseConfidence = 100;
-                
+
                 // Reduce confidence based on submissions (more attempts = less confidence)
                 const submissionPenalty = Math.min(60, (submissionCount - 1) * 15);
-                
+
                 // Reduce confidence based on excessive visits (indecision)
                 const visitPenalty = Math.min(20, Math.max(0, (visitCount - 2) * 5));
-                
+
                 // Time-based confidence (optimal time: 2-6 minutes)
                 let timeFactor = 1;
                 if (timeInMinutes < 1) {
@@ -486,19 +492,19 @@ router.get('/analysis/:phone', async (req, res) => {
                 } else if (timeInMinutes > 10) {
                     timeFactor = Math.max(0.5, 1 - (timeInMinutes - 10) * 0.05);
                 }
-                
+
                 confidence = Math.max(20, Math.round((baseConfidence - submissionPenalty - visitPenalty) * timeFactor));
             } else if (answer.attempted) {
                 // Wrong answers get minimal confidence based on effort
                 confidence = Math.max(0, 15 - submissionCount * 3);
             }
-            
+
             // Enhanced TIQ (Technological Intelligence Quotient) - 0-150 scale
             let tiq = 0;
             if (answer.isCorrect) {
                 // Base TIQ for correct answers
                 let baseTIQ = 100;
-                
+
                 // Time efficiency bonus/penalty
                 if (timeInMinutes <= 3) {
                     baseTIQ += 20; // Quick and correct
@@ -509,31 +515,31 @@ router.get('/analysis/:phone', async (req, res) => {
                 } else {
                     baseTIQ -= 12 + (timeInMinutes - 10) * 5; // Very slow
                 }
-                
+
                 // Submission efficiency
                 const submissionEfficiency = Math.max(0, (6 - submissionCount) * 5);
                 baseTIQ += submissionEfficiency;
-                
+
                 // Visit pattern analysis
                 const visitEfficiency = visitCount <= 3 ? 5 : Math.max(-10, -visitCount);
                 baseTIQ += visitEfficiency;
-                
+
                 tiq = Math.max(60, Math.min(150, baseTIQ));
             } else if (answer.attempted) {
                 // Wrong answers: base TIQ with effort consideration
                 let baseTIQ = 30;
-                
+
                 // Time consideration for wrong answers
                 if (timeInMinutes >= 5) {
                     baseTIQ += 10; // At least they tried
                 }
-                
+
                 // Penalty for multiple wrong submissions
                 baseTIQ -= Math.max(0, (submissionCount - 1) * 8);
-                
+
                 tiq = Math.max(0, Math.min(50, baseTIQ));
             }
-            
+
             // Efficiency Score (0-100) - measures time vs outcome
             let efficiency = 0;
             if (answer.isCorrect) {
@@ -545,14 +551,14 @@ router.get('/analysis/:phone', async (req, res) => {
                 } else {
                     efficiency = Math.max(20, 100 - (timeInMinutes - 5) * 8);
                 }
-                
+
                 // Adjust for submission count
                 efficiency = Math.max(20, efficiency - (submissionCount - 1) * 10);
             } else if (answer.attempted) {
                 // Wrong answers get efficiency based on reasonable effort
                 efficiency = Math.max(0, 30 - timeInMinutes * 2);
             }
-            
+
             // Consistency Score (0-100) - measures decision-making pattern
             let consistency = 0;
             if (answer.isCorrect) {
@@ -562,17 +568,17 @@ router.get('/analysis/:phone', async (req, res) => {
                 // Lower consistency for wrong answers
                 consistency = Math.max(0, 25 - submissionCount * 5);
             }
-            
+
             // Accumulate totals
             totalConfidence += confidence;
             totalTIQ += tiq;
             totalEfficiency += efficiency;
             totalConsistency += consistency;
-            
+
             // Find correct answer
             const question = questions.find(q => q.questionId === answer.questionId);
             const correctAnswer = question ? question.answer : 'N/A';
-            
+
             return {
                 questionId: answer.questionId,
                 timeSpent: timeInMinutes,
@@ -588,13 +594,13 @@ router.get('/analysis/:phone', async (req, res) => {
                 grade: calculateGrade(confidence, tiq, efficiency, consistency)
             };
         });
-        
+
         // Add unattempted questions
         for (let i = 1; i <= totalQuestions; i++) {
             if (!technoScore.answers.find(a => a.questionId === i)) {
                 const question = questions.find(q => q.questionId === i);
                 const correctAnswer = question ? question.answer : 'N/A';
-                
+
                 questionAnalysis.push({
                     questionId: i,
                     timeSpent: 0,
@@ -610,37 +616,37 @@ router.get('/analysis/:phone', async (req, res) => {
                 });
             }
         }
-        
+
         // Sort by question ID
         questionAnalysis.sort((a, b) => a.questionId - b.questionId);
-        
+
         // Calculate aggregate scores
         const averageConfidence = attemptedQuestions > 0 ? Math.round(totalConfidence / attemptedQuestions) : 0;
         const averageTIQ = attemptedQuestions > 0 ? Math.round(totalTIQ / attemptedQuestions) : 0;
         const averageEfficiency = attemptedQuestions > 0 ? Math.round(totalEfficiency / attemptedQuestions) : 0;
         const averageConsistency = attemptedQuestions > 0 ? Math.round(totalConsistency / attemptedQuestions) : 0;
-        
+
         // Enhanced Collective Performance Score (0-100)
         // Weighted combination of all metrics
         const collectiveScore = Math.round(
-            (accuracy * 0.35) + 
-            (averageConfidence * 0.20) + 
-            (averageTIQ * 0.20 * 100/150) + // Normalize TIQ to 100 scale
-            (averageEfficiency * 0.15) + 
+            (accuracy * 0.35) +
+            (averageConfidence * 0.20) +
+            (averageTIQ * 0.20 * 100 / 150) + // Normalize TIQ to 100 scale
+            (averageEfficiency * 0.15) +
             (averageConsistency * 0.10)
         );
-        
+
         // Performance categorization
         const performanceCategory = categorizePerformance(collectiveScore, accuracy, averageTIQ);
-        
+
         // Calculate total contest time
-        const totalContestTime = technoScore.endTime ? 
-            Math.floor((technoScore.endTime - technoScore.startTime) / (1000 * 60)) : 
+        const totalContestTime = technoScore.endTime ?
+            Math.floor((technoScore.endTime - technoScore.startTime) / (1000 * 60)) :
             Math.floor((new Date() - technoScore.startTime) / (1000 * 60));
-        
+
         // Time efficiency analysis
         const timeEfficiencyScore = calculateTimeEfficiency(totalContestTime, attemptedQuestions, correctAnswers);
-        
+
         // Strengths and areas for improvement
         const insights = generateInsights(questionAnalysis, accuracy, averageTIQ, averageEfficiency, averageConsistency);
 
@@ -655,7 +661,7 @@ router.get('/analysis/:phone', async (req, res) => {
                 wrongAnswers,
                 accuracy,
                 completionRate,
-                
+
                 // Enhanced metrics
                 averageConfidence,
                 averageTIQ,
@@ -664,17 +670,17 @@ router.get('/analysis/:phone', async (req, res) => {
                 collectiveScore,
                 performanceCategory,
                 timeEfficiencyScore,
-                
+
                 // Time analysis
                 totalContestTime,
                 averageTimePerQuestion: attemptedQuestions > 0 ? Math.round(totalContestTime / attemptedQuestions) : 0,
-                
+
                 // Detailed question analysis
                 questionAnalysis,
-                
+
                 // Insights and recommendations
                 insights,
-                
+
                 // Original scores
                 scores: technoScore.scores
             }
@@ -688,8 +694,8 @@ router.get('/analysis/:phone', async (req, res) => {
 
 // Helper function to calculate performance grade
 function calculateGrade(confidence, tiq, efficiency, consistency) {
-    const avgScore = (confidence + (tiq * 100/150) + efficiency + consistency) / 4;
-    
+    const avgScore = (confidence + (tiq * 100 / 150) + efficiency + consistency) / 4;
+
     if (avgScore >= 85) return 'A+';
     if (avgScore >= 80) return 'A';
     if (avgScore >= 75) return 'A-';
@@ -717,21 +723,21 @@ function categorizePerformance(collectiveScore, accuracy, averageTIQ) {
 // Helper function to calculate time efficiency
 function calculateTimeEfficiency(totalTime, attempted, correct) {
     if (attempted === 0) return 0;
-    
+
     const avgTimePerQuestion = totalTime / attempted;
     const optimalTime = 5; // minutes per question
-    
+
     let efficiency = 100;
     if (avgTimePerQuestion > optimalTime) {
         efficiency = Math.max(20, 100 - (avgTimePerQuestion - optimalTime) * 10);
     } else if (avgTimePerQuestion < 2) {
         efficiency = 80; // Too fast might indicate guessing
     }
-    
+
     // Adjust based on accuracy
     const accuracyFactor = correct / attempted;
     efficiency = Math.round(efficiency * (0.6 + 0.4 * accuracyFactor));
-    
+
     return Math.max(0, Math.min(100, efficiency));
 }
 
@@ -742,27 +748,27 @@ function generateInsights(questionAnalysis, accuracy, averageTIQ, averageEfficie
         improvements: [],
         recommendations: []
     };
-    
+
     // Analyze strengths
     if (accuracy >= 80) insights.strengths.push('High accuracy rate');
     if (averageTIQ >= 100) insights.strengths.push('Strong technical intelligence');
     if (averageEfficiency >= 75) insights.strengths.push('Efficient problem-solving');
     if (averageConsistency >= 70) insights.strengths.push('Consistent decision-making');
-    
+
     // Analyze areas for improvement
     if (accuracy < 60) insights.improvements.push('Focus on accuracy improvement');
     if (averageTIQ < 80) insights.improvements.push('Enhance technical problem-solving skills');
     if (averageEfficiency < 60) insights.improvements.push('Work on time management');
     if (averageConsistency < 50) insights.improvements.push('Improve decision confidence');
-    
+
     // Generate recommendations
     const avgSubmissions = questionAnalysis.reduce((sum, q) => sum + q.submissionCount, 0) / questionAnalysis.length;
     const avgVisits = questionAnalysis.reduce((sum, q) => sum + q.visitCount, 0) / questionAnalysis.length;
-    
+
     if (avgSubmissions > 2) insights.recommendations.push('Practice more to build confidence and reduce answer changes');
     if (avgVisits > 4) insights.recommendations.push('Work on decision-making skills to reduce hesitation');
     if (accuracy < 70) insights.recommendations.push('Focus on fundamental concepts and practice similar problems');
-    
+
     return insights;
 }
 
@@ -770,41 +776,41 @@ function generateInsights(questionAnalysis, accuracy, averageTIQ, averageEfficie
 router.post('/techno/end', async (req, res) => {
     try {
         const { phone } = req.body;
-        
+
         console.log('End contest request:', { phone });
-        
+
         if (!phone) {
             return res.status(400).json({ message: 'Phone number is required' });
         }
 
-        let technoScore = await TechnoScore.findOne({ 
+        let technoScore = await TechnoScore.findOne({
             phone: phone.trim(),
             isStarted: true,
             isCompleted: false
         });
 
         console.log('Found contest to end:', technoScore ? 'Yes' : 'No');
-        
+
         if (!technoScore) {
             // Try with trimmed phone number
             const cleanPhone = phone.trim();
             console.log('Trying with trimmed phone:', cleanPhone);
-            
-            const technoScoreCleaned = await TechnoScore.findOne({ 
+
+            const technoScoreCleaned = await TechnoScore.findOne({
                 phone: cleanPhone,
                 isStarted: true,
                 isCompleted: false
             });
-            
+
             console.log('Found contest with cleaned phone:', technoScoreCleaned ? 'Yes' : 'No');
-            
+
             if (!technoScoreCleaned) {
                 // Show all contests for debugging
                 const allContests = await TechnoScore.find({}).select('phone name isStarted isCompleted _id');
                 console.log('All contests in database:', allContests);
                 return res.status(404).json({ message: 'No active contest found' });
             }
-            
+
             technoScore = technoScoreCleaned;
         }
 
@@ -825,7 +831,7 @@ router.post('/techno/end', async (req, res) => {
         const savedContest = await technoScore.save();
         console.log('Contest ended successfully:', savedContest._id);
 
-        res.json({ 
+        res.json({
             message: 'Contest ended successfully',
             endTime: technoScore.endTime,
             totalTimeSpent: technoScore.totalTimeSpent,
@@ -834,15 +840,16 @@ router.post('/techno/end', async (req, res) => {
         });
     } catch (error) {
         console.error('Error ending contest:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             message: 'Error ending contest',
-            error: error.message 
+            error: error.message
         });
     }
 });
 
 // Get contest times - Remove time limits
 router.get('/techno/times', async (req, res) => {
+
 
     try {
         const { phone, sessionId } = req.query;
@@ -851,11 +858,14 @@ router.get('/techno/times', async (req, res) => {
         // const technoSchedule = await Technopedia.findOne()
         //     .sort({ createdAt: -1 })
         //     .select('startTime endTime');
+        // const technoSchedule = await Technopedia.findOne()
+        //     .sort({ createdAt: -1 })
+        //     .select('startTime endTime');
 
-            const technoSchedule = {
-                startTime: new Date('2026-05-10T09:00:00'),
-                endTime: new Date('2027-05-10T18:00:00')
-            };
+        const technoSchedule = {
+            startTime: new Date('2026-05-10T09:00:00'),
+            endTime: new Date('2027-05-10T18:00:00')
+        };
         // if (!technoSchedule) {
         //     return res.status(404).json({ message: 'No contest schedule found' });
         // }
@@ -904,7 +914,7 @@ router.get('/techno/times', async (req, res) => {
 //         const technoSchedule = await Technopedia.findOne()
 //             .sort({ createdAt: -1 })
 //             .select('startTime endTime');
-        
+
 //         if (!technoSchedule) {
 //             return res.status(404).json({ message: 'No contest found' });
 //         }
@@ -924,62 +934,31 @@ router.get('/techno/times', async (req, res) => {
 //     }
 // });
 router.get('/techno/dates', async (req, res) => {
-  try {
+    try {
 
-    // Hardcoded dates
-    const technoSchedule = {
-      startTime: new Date('2026-05-10T09:00:00'),
-      endTime: new Date('2027-05-10T18:00:00')
-    };
+        // Hardcoded dates
+        const technoSchedule = {
+            startTime: new Date('2026-05-10T09:00:00'),
+            endTime: new Date('2027-05-10T18:00:00')
+        };
 
     // Convert times to IST
     const istStartTime = convertToIST(technoSchedule.startTime);
     const istEndTime = convertToIST(technoSchedule.endTime);
 
-    res.json({
-      startTime: istStartTime.toISOString(),
-      endTime: istEndTime.toISOString(),
-      timezone: 'Asia/Kolkata'
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// Get question by ID
-router.get('/techno/questions/:id', async (req, res) => {
-    try {
-        const questionId = parseInt(req.params.id);
-        
-        // Find the latest contest and get the specific question
-        const technopedia = await Technopedia.findOne()
-            .sort({ createdAt: -1 })
-            .select('questions');
-
-        if (!technopedia) {
-            return res.status(404).json({ message: 'No contest found' });
-        }
-
-        const question = technopedia.questions.find(q => q.questionId === questionId);
-        
-        if (!question) {
-            return res.status(404).json({ message: 'Question not found' });
-        }
-
-        // Return question without the answer
         res.json({
-            title: question.title,
-            content: question.content,
-            points: question.points,
-            letter: question.letter
+            startTime: istStartTime.toISOString(),
+            endTime: istEndTime.toISOString(),
+            timezone: 'Asia/Kolkata'
         });
+
     } catch (error) {
-        console.error('Error fetching question:', error);
-        res.status(500).json({ message: 'Error fetching question' });
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
 });
+
+
 
 // Get leaderboard
 router.get('/contest/leaderboard', async (req, res) => {
@@ -994,12 +973,12 @@ router.get('/contest/leaderboard', async (req, res) => {
         // }
 
         // Get all completed contests with scores
-        const leaderboard = await TechnoScore.find({ 
+        const leaderboard = await TechnoScore.find({
             isCompleted: true
         })
-        .select('name school scores answers totalTimeSpent')
-        .sort({ 'scores.total': -1, totalTimeSpent: 1 })
-        .limit(100);
+            .select('name school scores answers totalTimeSpent')
+            .sort({ 'scores.total': -1, totalTimeSpent: 1 })
+            .limit(100);
 
         const formattedLeaderboard = leaderboard.map(entry => {
             const questionStatus = {
@@ -1020,7 +999,7 @@ router.get('/contest/leaderboard', async (req, res) => {
                 const letter = String.fromCharCode(64 + answer.questionId);
                 questionStatus[letter] = {
                     status: answer.isCorrect ? 'correct' : (answer.attempted ? 'incorrect' : 'not-attempted'),
-                    time: answer.totalTimeSpent ? Math.floor(answer.totalTimeSpent/1000) : null,
+                    time: answer.totalTimeSpent ? Math.floor(answer.totalTimeSpent / 1000) : null,
                     score: answer.score
                 };
             });
@@ -1058,7 +1037,7 @@ router.get('/techno/submission-count/:questionId', async (req, res) => {
     try {
         const { questionId } = req.params;
         const { phone } = req.query;
-        
+
         if (!phone) {
             return res.status(400).json({ message: 'Phone number is required' });
         }
@@ -1081,6 +1060,56 @@ router.get('/techno/submission-count/:questionId', async (req, res) => {
     } catch (error) {
         console.error('Error fetching submission count:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+
+// fetching the question year wise
+router.get('/questions/years', async (req, res) => {
+    try {
+        const yearsQuestions = await Technopedia.find().sort({ createdAt: -1 });
+        if (!yearsQuestions || yearsQuestions.length === 0) {
+            return res.status(404).json({ message: 'No questions found' });
+        }
+        res.status(200).json({
+            success: true,
+            data: yearsQuestions,
+            message: 'Questions fetched year wise successfully'
+        })
+    } catch (error) {
+        console.error('Error fetching question years:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+})
+
+// Get question year by ID
+router.get('/questions/:year/:id', async (req, res) => {
+    try {
+        const { year, id } = req.params;
+        const questionId = Number(id);  // ✅ const — was global before
+
+        const technopedia = await Technopedia.findOne({
+            $or: [{ year: Number(year) }, { year: String(year) }]
+        }).sort({ createdAt: -1 });
+
+        if (!technopedia) {
+            return res.status(404).json({ message: `No contest found for year ${year}` });
+        }
+
+        const question = technopedia.questions.find(q => q.questionId === questionId);
+        if (!question) {
+            return res.status(404).json({ message: `Question ${questionId} not found` });
+        }
+
+        res.json({
+            title: question.title,
+            content: question.content,
+            points: question.points,
+            letter: question.letter
+        });
+    } catch (error) {
+        console.error('Error fetching question:', error);
+        res.status(500).json({ message: 'Error fetching question' });
     }
 });
 

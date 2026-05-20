@@ -14,6 +14,7 @@ const technopediaSchema = mongoose.Schema({
     questions: [technopediaQuestionSchema],
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
+    year:{type:String,required:true},
     createdAt: { type: Date, default: Date.now }
 });
 
