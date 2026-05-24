@@ -908,53 +908,29 @@ router.get('/techno/times', async (req, res) => {
     }
 });
 
-// Get contest dates
-// router.get('/techno/dates', async (req, res) => {
-//     try {
-//         const technoSchedule = await Technopedia.findOne()
-//             .sort({ createdAt: -1 })
-//             .select('startTime endTime');
-
-//         if (!technoSchedule) {
-//             return res.status(404).json({ message: 'No contest found' });
-//         }
-
-//         // Convert times to IST
-//         const istStartTime = convertToIST(technoSchedule.startTime);
-//         const istEndTime = convertToIST(technoSchedule.endTime);
-
-//         res.json({
-//             startTime: istStartTime.toISOString(),
-//             endTime: istEndTime.toISOString(),
-//             timezone: 'Asia/Kolkata'
-//         });
-//     } catch (error) {
-//         console.error('Error fetching contest dates:', error);
-//         res.status(500).json({ message: 'Error fetching contest dates' });
-//     }
-// });
+//Get contest dates
 router.get('/techno/dates', async (req, res) => {
     try {
+        const technoSchedule = await Technopedia.findOne()
+            .sort({ createdAt: -1 })
+            .select('startTime endTime');
 
-        // Hardcoded dates
-        const technoSchedule = {
-            startTime: new Date('2026-05-10T09:00:00'),
-            endTime: new Date('2027-05-10T18:00:00')
-        };
+        if (!technoSchedule) {
+            return res.status(404).json({ message: 'No contest found' });
+        }
 
-    // Convert times to IST
-    const istStartTime = convertToIST(technoSchedule.startTime);
-    const istEndTime = convertToIST(technoSchedule.endTime);
+        // Convert times to IST
+        const istStartTime = convertToIST(technoSchedule.startTime);
+        const istEndTime = convertToIST(technoSchedule.endTime);
 
         res.json({
             startTime: istStartTime.toISOString(),
             endTime: istEndTime.toISOString(),
             timezone: 'Asia/Kolkata'
         });
-
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Error fetching contest dates:', error);
+        res.status(500).json({ message: 'Error fetching contest dates' });
     }
 });
 
