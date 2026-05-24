@@ -526,32 +526,6 @@ function Contest() {
         const radius = 90;
         const strokeWidth = 20;
         const circumference = Math.PI * radius;
-<<<<<<< HEAD
-
-        const progress = (analysisData.collectiveScore / 100) * circumference;
-        return (
-            <div className="TA-analysis-container">
-                <h2 className="TA-analysis-title">🔬 TechnoAnalysis Report</h2>
-                <div className="TA-score-card">
-                    <div className="TA-score-meter" >
-                        <span style={{ textAlign: "center" }}>
-                            <svg
-                            width="340"
-                            height="220"
-                            viewBox="0 0 220 120"
-                            >
-
-                                {/* Background Arc */}
-                                <path
-                                d="
-                                    M 20 100
-                                    A 90 90 0 0 1 200 100
-                                "
-                                fill="none"
-                                stroke="#ffffff"
-                                strokeWidth={strokeWidth}
-                                strokeLinecap=""
-=======
         const progress = (40 / 100) * circumference;
 
         return (
@@ -585,7 +559,6 @@ function Contest() {
                                     stroke="#ffffff"
                                     strokeWidth={strokeWidth}
                                     strokeLinecap=""
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                                 />
 
                                 {/* Progress Arc */}
@@ -615,11 +588,7 @@ function Contest() {
                                     fontWeight="bold"
                                     fill="white"
                                 >
-<<<<<<< HEAD
                                 {analysisData.collectiveScore}/1000
-=======
-                                    0/1000
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                                 </text>
                                 <br></br>
                                 <text
@@ -632,7 +601,6 @@ function Contest() {
                                 >
                                     Overall Score
                                 </text>
-<<<<<<< HEAD
 
                             </svg>
                         </span>
@@ -701,160 +669,12 @@ function Contest() {
                                         </div>
                                     </div>
                                     ))}
-=======
-                            </svg>
-                        </span>
-                        <div>
-                            <span style={{ display: "block", marginBotton: "10px" }}>
-                                <p style={{ color: "white" }}>⏱️ Time taken</p>
-                                <h1 style={{
-                                    color: "white",
-                                    fontSize: "50px",
-                                    fontWeight: "900"
-                                }}>3h 2m</h1>
-                                <p style={{
-                                    color: "#e1e1e1",
-                                    fontSize: "15px",
-                                    fontWeight: "400",
-                                    marginTop: "4px",
-                                }}>15 min/Q</p>
-                            </span>
-                            <hr></hr>
-                            <span style={{ display: "block" }}>
-                                <p style={{ color: "white" }}>✅ Completion rate</p>
-                                <h1 style={{
-                                    color: "white",
-                                    fontSize: "50px",
-                                    fontWeight: "900"
-                                }}>10%</h1>
-                                <p style={{ color: "white" }}>4/10</p>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div style={{
-                        width: "350px",
-                        height: "300px",
-                        border: "2px solid white",
-                        borderRadius: "16px",
-                        background: "white",
-                    }}>
-                        <div style={{
-                            width: "300px",
-                            height: "50px",
-                            borderRadius: "10px",
-                            borderLeft: "7px solid blue",
-                            margin: "20px",
-                            boxShadow: "0 0 10px gray"
-                        }}> Attempted</div>
-                        <div style={{
-                            width: "300px",
-                            height: "50px",
-                            borderRadius: "10px",
-                            borderLeft: "7px solid green",
-                            margin: "20px",
-                            boxShadow: "0 0 10px gray"
-                        }}>Correct</div>
-                        <div style={{
-                            width: "300px",
-                            height: "50px",
-                            borderRadius: "10px",
-                            borderLeft: "7px solid red",
-                            margin: "20px",
-                            boxShadow: "0 0 10px gray"
-                        }}>Wrong</div>
-                        <div style={{
-                            width: "300px",
-                            height: "50px",
-                            borderRadius: "10px",
-                            borderLeft: "7px solid orange",
-                            margin: "20px",
-                            boxShadow: "0 0 10px gray"
-                        }}>Unattempted</div>
-                    </div>
-                </div>
-
-                {/* Performance Summary */}
-                {/* <div className="TA-performance-summary">
-                    <div className="TA-summary-card TA-primary">
-                        <div className="TA-summary-icon">{performanceLevel.icon}</div>
-                        <div className="TA-summary-content">
-                            <div className="TA-summary-value">{analysisData.collectiveScore}/100</div>
-                            <div className="TA-summary-label">Overall Score</div>
-                            <div className="TA-summary-category" style={{ color: performanceLevel.color }}>
-                                {analysisData.performanceCategory}
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                             </div>
                         </div>
                     </div>
 
-<<<<<<< HEAD
                     <div style={{marginRight:"20px"}}>
                             {analysisData.insights && (
-=======
-                    <div className="TA-summary-card">
-                        <div className="TA-summary-icon">⏱️</div>
-                        <div className="TA-summary-content">
-                            <div className="TA-summary-value">{analysisData.totalContestTime}m</div>
-                            <div className="TA-summary-label">Total Time</div>
-                            <div className="TA-summary-sub">Avg: {analysisData.averageTimePerQuestion}m/Q</div>
-                        </div>
-                    </div>
-
-                    <div className="TA-summary-card">
-                        <div className="TA-summary-icon">✅</div>
-                        <div className="TA-summary-content">
-                            <div className="TA-summary-value">{analysisData.completionRate}%</div>
-                            <div className="TA-summary-label">Completion Rate</div>
-                            <div className="TA-summary-sub">{analysisData.attemptedQuestions}/{analysisData.totalQuestions}</div>
-                        </div>
-                    </div>
-                </div> */}
-
-                {/* Overview Cards */}
-                <div className="TA-analysis-overview">
-                    <div className="TA-overview-card TA-attempted">
-                        <div className="TA-overview-number">{analysisData.attemptedQuestions}</div>
-                        <div className="TA-overview-label">Attempted</div>
-                    </div>
-                    <div className="TA-overview-card TA-correct">
-                        <div className="TA-overview-number">{analysisData.correctAnswers}</div>
-                        <div className="TA-overview-label">Correct</div>
-                    </div>
-                    <div className="TA-overview-card TA-wrong">
-                        <div className="TA-overview-number">{analysisData.wrongAnswers}</div>
-                        <div className="TA-overview-label">Wrong</div>
-                    </div>
-                    <div className="TA-overview-card TA-unattempted">
-                        <div className="TA-overview-number">{analysisData.unattemptedQuestions}</div>
-                        <div className="TA-overview-label">Unattempted</div>
-                    </div>
-                </div>
-
-                {/* Performance Metrics */}
-                <div className="TA-performance-metrics">
-                    {['accuracy', 'averageConfidence', 'averageTIQ', 'averageEfficiency', 'averageConsistency', 'timeEfficiencyScore'].map((metricKey, index) => (
-                        <div key={index} className="TA-metric-card">
-                            <div className="TA-metric-header">
-                                <span className="TA-metric-icon">{metricIcons[metricKey]}</span>
-                                <span className="TA-metric-title">{metricTitles[metricKey]}</span>
-                            </div>
-                            <div className="TA-metric-value">
-                                {metricKey === 'averageTIQ' ? `${analysisData[metricKey]}/150` : `${analysisData[metricKey]}/100`}
-                            </div>
-                            <div className="TA-metric-bar">
-                                <div
-                                    className="TA-metric-progress"
-                                    style={{ width: `${metricKey === 'averageTIQ' ? (analysisData[metricKey] / 150) * 100 : analysisData[metricKey]}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Insights Section */}
-                {analysisData.insights && (
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                     <div className="TA-insights-section">
                         <h3>💡 Performance Insights</h3>
                         <div className="TA-insights-grid">
@@ -875,16 +695,10 @@ function Contest() {
                             ))}
                         </div>
                     </div>
-<<<<<<< HEAD
                      )}
                     </div>
                 </div>
 
-=======
-                )}
-
-                {/* Question-wise Analysis */}
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                 <div className="TA-question-analysis">
                     <h3>📊 Question-wise Performance</h3>
                     <div className="TA-question-analysis-box">
@@ -1006,13 +820,8 @@ function Contest() {
     return (
         <div className={`contest-container ${contestStarted ? 'contest-started' : ''}`} >
             {/* Back button for contest */}
-<<<<<<< HEAD
             {contestStarted && (
                 showButton  && <Button
-=======
-            {(contestStarted || showAnalysis) && (
-                <Button
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                     variant="outlined"
                     startIcon={<ArrowBackIcon />}
                     onClick={handleBack}
@@ -1021,13 +830,8 @@ function Contest() {
                     Back
                 </Button>
             )}
-<<<<<<< HEAD
             
             <div className="header-section" >
-=======
-
-            <div className="header-section">
->>>>>>> bfdbed7d68ee77f5ae8118b5e1ff36d374afb9b8
                 <div className="main-logo-container">
                     {/* <img src={starLogo} alt="" className="star-logo" /> */}
                     <img src={technoLogo} alt="Technothlon" className="main-logo1" />
