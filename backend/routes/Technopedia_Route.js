@@ -1,13 +1,29 @@
+/**
+ * Technopedia API Routes Module
+ * 
+ * This file defines all REST API endpoints for the Technopedia online quiz.
+ * Handles: student auth, contest timing, question retrieval, answer submission, scoring
+ */
+
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+// Quiz question model
 const Technopedia = require('../models/technoped-question')
+// User/team score tracking model
 const TechnoScore = require('../models/technopedia_user')
+// Cryptography utilities for secure tokens
 const crypto = require('crypto');
+// Time utilities for contest scheduling
 const { convertToIST } = require('../utils/timeUtils');
+// New batch (2026) offline student data
 const Offline26 = require('../models/offline26');
 
-
+/**
+ * Database Connectivity Test Endpoint
+ * GET /api/technopedia/test-db
+ * Verifies MongoDB connection by creating and deleting a test document
+ */
 router.get('/test-db', async (req, res) => {
     try {
         // Try to create a simple document to test database connection
@@ -58,6 +74,22 @@ router.get('/test-db', async (req, res) => {
     }
 });
 
+/**
+ * Helper Function: checkModelForStudent
+ * 
+ * Searches a specific student database model for a roll number match and validates contact/email
+ * Used to verify student identity across multiple database models (Offline26, Online26, etc)
+ * 
+ * Parameters:
+ * @param {Model} Model - Mongoose model to search  
+ * @param {String} rollNumber - Student roll number to search for
+ * @param {String} secondValue - Contact number or email to validate
+ * @param {String} type - Student category ("offline"/"online")
+ * 
+ * Returns:
+ * - Matched student object if found (includes name, email, phone, school)
+ * - null if no match found
+ */
 // Helper function to check a specific database model
 const checkModelForStudent = async (Model, rollNumber, secondValue, type) => {
     const student = await Model.findOne({ rollNumber: rollNumber });
@@ -93,6 +125,27 @@ const checkModelForStudent = async (Model, rollNumber, secondValue, type) => {
     return null;
 };
 
+/**
+ * Student Authentication/Verification Endpoint
+ * POST /api/technopedia/check-student
+ * 
+ * Purpose:
+ * - Verify student identity by matching roll number with contact/email
+ * - Search multiple student databases (Offline26, Online26, Offline25, Online25)
+ * - Return student metadata if authentication succeeds
+ * 
+ * Request Body:
+ * {
+ *   "rollNumber": "A123456",
+ *   "second": "9876543210" or "student@email.com"
+ * }
+ * 
+ * Search Order:
+ * 1. Offline26 (2026 batch)
+ * 2. Online26 (if enabled)
+ * 3. Offline25 (if enabled)
+ * 4. Online25 (if enabled)
+ */
 router.post('/check-student', async (req, res) => {
     try {
         const { rollNumber, second } = req.body;

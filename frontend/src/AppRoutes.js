@@ -1,4 +1,16 @@
 // AppRoutes.js
+/**
+ * Application Route Configuration
+ * 
+ * Defines all client-side routes for Technothlon application
+ * Uses React Router v6 for SPA navigation
+ * 
+ * Routes:
+ * - /technopedia-login: User authentication
+ * - /technopedia: Year selection 
+ * - /technopedia/:year: Questions list
+ * - /technopedia/:year/:id/:letter: Individual question
+ */
 // Defines all routes and navigation paths for the application
 // Maps URL paths to their corresponding components
 

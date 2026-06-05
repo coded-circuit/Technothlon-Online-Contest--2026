@@ -7,8 +7,22 @@ import technoped from '../../Assets/coin.png';
 
 
 const TechnopediaLogin = () => {
+  /**
+   * Base URL Configuration
+   * Switch between production and development/local backend URLs
+   * - Production: https://technothlon.techniche.org.in
+   * - Development: http://localhost:4000
+   */
   const baseURL = process.env.NODE_ENV === "production" ? "https://technothlon.techniche.org.in" : "http://localhost:4000";
   
+  /**
+   * Form State Management
+   * rollNumber: Student's roll number (uppercase)
+   * second: Contact number or email for verification
+   * error: Validation or authentication error messages
+   * message: General informational messages
+   * loading: Loading state for submit button during API calls
+   */
   const [rollNumber, setRollNumber] = useState('');
   const [second, setSecond] = useState(''); // email or phone -> changed to Date of Birth
   const [error, setError] = useState('');
@@ -16,6 +30,12 @@ const TechnopediaLogin = () => {
   const [loading,setLoading] = useState(false);
   const navigate = useNavigate();
 
+  /**
+   * Contest Timing State
+   * Stores contest start and end times fetched from backend
+   * Used to validate whether contest is currently active
+   * contestTime.isContestStarted: Boolean indicating if current time is within contest window
+   */
   // Add contest timing state
   const [contestDates, setContestDates] = useState({
     startTime: null,
@@ -27,6 +47,20 @@ const TechnopediaLogin = () => {
     isContestStarted: true
   });
 
+  /**
+   * Contest Timing Fetch Effect Hook
+   * 
+   * Purpose:
+   * - Fetch contest start/end times from backend on component mount
+   * - Calculate if current time is within contest window
+   * - Poll backend every 30 seconds to check contest status
+   * - Update component state with contest timing information
+   * 
+   * Logic:
+   * - GET request to /api/technopedia/techno/dates endpoint
+   * - Compare current time against start and end times
+   * - Set isContestStarted based on time comparison
+   * - Cleanup interval on component unmount to prevent memory leaks\n   */
   // Add contest timing fetch effect
   useEffect(() => {
     const fetchContestTimes = async () => {
@@ -76,6 +110,10 @@ const TechnopediaLogin = () => {
     return () => clearInterval(interval);
   }, [baseURL]);
 
+  /**
+   * Handle Login Form Submission
+   * Validates contest timing, authenticates user, stores session
+   */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
