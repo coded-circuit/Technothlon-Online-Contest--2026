@@ -1,3 +1,6 @@
+// Main App Component
+// This is the root component that renders the application routes and layout
+
 import React, { useEffect } from 'react';
 import AppRoutes from './AppRoutes';
 import loadScript from './components/loadscript';
@@ -34,6 +37,7 @@ function App() {
 //   }
 //   },[])
 
+  // Render the main App structure with routing
   return (
     <div className="App">
       <div className="app-container">

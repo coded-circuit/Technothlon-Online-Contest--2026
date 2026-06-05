@@ -1,3 +1,4 @@
+/* Main wrapper container with full-width blue background */
 .wrapper{
     display: inline-block;
     width: 100%;
@@ -6,6 +7,7 @@
     text-align: center;
     
 }
+/* Responsive design for mobile devices */
 @media screen and (max-width: 767px){
     .wrapper{
         width: 100%;
@@ -14,6 +16,7 @@
     }
 }
 
+/* Main heading styling */
 .head{
     color:antiquewhite;
     font-size:70px;
@@ -24,6 +27,7 @@
     text-align: center;
     
 }
+/* Responsive heading for mobile */
 @media screen and (max-width: 767px){
     .head{
         text-align: center;
@@ -31,7 +35,7 @@
     }
 }
 
-
+/* Secondary text styling */
 .txt{
     color: antiquewhite;
     font-size: 20px;
@@ -40,6 +44,7 @@
     text-align: center;
 }
 
+/* Main content text with large side margins */
 .text{
     color:rgba(28, 28, 28, 0.7);
     margin-top: 110px;
@@ -48,6 +53,7 @@
     margin-left: 250px;
     margin-right: 250px;
 }
+/* Responsive text layout for mobile devices */
 @media screen and (max-width: 767px){
     .text{
         font-size: auto;
@@ -56,7 +62,7 @@
     }
 }
 
-
+/* Important text styling */
 .imp{
     text-align: center;
     font-size:18px;
@@ -64,11 +70,13 @@
 
 }
 
+/* Heading container */
 .heading{
     text-align: center;
      
 }
 
+/* Button container with full width */
 .button{
     
     width: 100%;
@@ -76,6 +84,7 @@
     align-items: center;
     text-align: center;
 }
+/* Individual button styling with blue background and rounded corners */
 .but{
     display: inline-block;
     background-color: #4CB8ED;
@@ -91,6 +100,7 @@
     
     
 }
+/* Responsive button text for mobile devices */
 @media screen and (max-width: 767px) { 
     .buttxt { 
       display: inline-block; 
