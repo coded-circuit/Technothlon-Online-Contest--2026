@@ -22,6 +22,11 @@ import TechnopediaLogin from './components/Pages/Technopedia/technopedia_login';
 import Technopedia from './components/Pages/Technopedia/technopedia';
 import TechnopediaQuestion from './components/Pages/Technopedia/technopedia-question';
 import TechnopediaYear from './components/Pages/Technopedia/technopediaYear';
+import Leaderboard from './components/Pages/Contest/Leaderboard';
+
+import Contestlogin from './components/Pages/Contest/contest_login';
+import Contest from './components/Pages/Contest/Contest';
+import Question from './components/Pages/Contest/question';
 
 // Define all application routes
 const AppRoutes = () => {
@@ -35,6 +40,15 @@ const AppRoutes = () => {
       <Route path="/technopedia" element={<TechnopediaYear />} />
       {/* Questions list for a specific year */}
       <Route path='/technopedia/:year' element={<Technopedia/>}/>
+
+
+
+
+         {/* Contest Routes */}
+      <Route path="/contest/login" element={<Contestlogin />} />
+      <Route path="/contest" element={<Contest />} />
+      <Route path="/contest/:id/:letter" element={<Question />} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
        </Routes>
   );
 };

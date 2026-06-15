@@ -138,6 +138,8 @@ app.use('/api/technopedia', technopediaRoutes);
  * Simple endpoint to verify the server is running
  * Useful for deployment monitoring and load balancers
  */
+app.use('/api', contestRoutes);
+// Root route
 app.get('/', (req, res) => {
     res.send("Hello from Technothlon Server");
 });

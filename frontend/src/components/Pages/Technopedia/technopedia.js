@@ -189,7 +189,7 @@ function Contest() {
 
     // Separate preview fetch (no auth needed, just metadata)
     const fetchQuestionsPreview = async () => {
-        try {
+        try { 
             setQuestionLoading(true)
             const questionPromises = Array.from({ length: 10 }, (_, i) => i + 1).map(id =>
                 axios.get(`${baseURL}/api/technopedia/questions/${year}/${id}`)
