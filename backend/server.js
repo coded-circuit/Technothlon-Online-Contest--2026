@@ -33,6 +33,7 @@ connectDB();
 
 // Import the main API routes for Technopedia quiz functionality
 const technopediaRoutes = require('./routes/Technopedia_Route');
+const contestRoutes = require('./routes/contestRoutes');
 
 /**
  * Event Emitter Configuration
