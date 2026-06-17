@@ -15,7 +15,7 @@
 // Maps URL paths to their corresponding components
 
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Import page components
 import TechnopediaLogin from './components/Pages/Technopedia/technopedia_login';
@@ -23,10 +23,23 @@ import Technopedia from './components/Pages/Technopedia/technopedia';
 import TechnopediaQuestion from './components/Pages/Technopedia/technopedia-question';
 import TechnopediaYear from './components/Pages/Technopedia/technopediaYear';
 import Leaderboard from './components/Pages/Contest/Leaderboard';
+import MegaContestLogin from './components/Pages/Mega-Contest/login';
+import MegaContest from './pages/MegaContest';
 
 import Contestlogin from './components/Pages/Contest/contest_login';
 import Contest from './components/Pages/Contest/Contest';
 import Question from './components/Pages/Contest/question';
+import { CONTEST_END_TIME, CONTEST_START_TIME } from './config/contest';
+import useAuthContext from './hooks/useAuthContext';
+
+const ProtectedContestArena = () => {
+  const { isAuthenticated } = useAuthContext();
+  const now = Date.now();
+  const isContestWindowOpen = now >= CONTEST_START_TIME.getTime() && now <= CONTEST_END_TIME.getTime();
+
+  if (!isAuthenticated) return <Navigate to="/contest/login" replace />;
+  return isContestWindowOpen ? <Contest /> : <Navigate to="/mega-contest" replace />;
+};
 
 // Define all application routes
 const AppRoutes = () => {
@@ -47,8 +60,11 @@ const AppRoutes = () => {
          {/* Contest Routes */}
       <Route path="/contest/login" element={<Contestlogin />} />
       <Route path="/contest" element={<Contest />} />
+      <Route path="/contest/arena" element={<ProtectedContestArena />} />
       <Route path="/contest/:id/:letter" element={<Question />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/mega-contest/login" element={<MegaContestLogin />} />
+      <Route path="/mega-contest" element={<MegaContest />} />
        </Routes>
   );
 };

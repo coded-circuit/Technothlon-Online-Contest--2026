@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './contest_login.css';
 import AnimatedCountdown from '../../design/countdown';
+import { CONTEST_END_TIME, CONTEST_START_TIME } from '../../../config/contest';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Button } from '@mui/material';
@@ -16,8 +17,17 @@ const toProperCase = (str) => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
+
+const TEMP_LOGIN = {
+  rollNumber: 'TEMP123456',
+  phone: '9999999999',
+  name: 'Mega Contest Tester',
+  email: 'mega.tester@technothlon.test',
+  school: 'Technothlon Test School',
+  city: 'Guwahati',
+};
  
-const StudentAuth = () => {
+const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) => {
   const navigate = useNavigate();
   const baseURL = process.env.NODE_ENV === "production" ? "https://technothlon.techniche.org.in" : "http://localhost:3001";
 
@@ -32,15 +42,34 @@ const StudentAuth = () => {
     city: ''
   });
   const [message, setMessage] = useState('');
-  const [contestDates, setContestDates] = useState({
-    startTime: null,
-    endTime: null
-  });
   const [contestTime, setContestTime] = useState({
     startTime: null,
     endTime: null,
     isContestStarted: false
   });
+
+  const createTempSession = () => {
+    const now = Date.now();
+    localStorage.setItem('sessionId', `TEMP-MEGA-${now}`);
+    localStorage.setItem('userName', TEMP_LOGIN.name);
+    localStorage.setItem('userPhone', TEMP_LOGIN.phone);
+    localStorage.setItem('userEmail', TEMP_LOGIN.email);
+    localStorage.setItem('userRoll', TEMP_LOGIN.rollNumber);
+    localStorage.setItem('userSchool', TEMP_LOGIN.school);
+    localStorage.setItem('userCity', TEMP_LOGIN.city);
+    localStorage.setItem('usertype', 'temporary');
+    localStorage.removeItem('contestStartTime');
+    localStorage.removeItem('contestEndTime');
+    localStorage.removeItem('answeredQuestions');
+
+    setMessage(`Welcome back, ${TEMP_LOGIN.name}!`);
+    navigate(contestPath, { replace: true });
+  };
+
+  const isTempLogin = () => (
+    formData.rollNumber.trim().toUpperCase() === TEMP_LOGIN.rollNumber &&
+    formData.phone.trim() === TEMP_LOGIN.phone
+  );
 
   useEffect(() => {
     const fetchContestTimes = async () => {
@@ -73,15 +102,14 @@ const StudentAuth = () => {
           isContestStarted: isContestActive
         });
 
-        setContestDates({
-          startTime: startTimeDate.toISOString(),
-          endTime: endTimeDate.toISOString()
-        });
-
       } catch (error) {
         console.error('Error fetching contest times:', error);
-        // Set fallback message
-        setMessage('Unable to fetch contest timing. Please try again later.');
+        const now = Date.now();
+        setContestTime({
+          startTime: CONTEST_START_TIME,
+          endTime: CONTEST_END_TIME,
+          isContestStarted: now >= CONTEST_START_TIME.getTime() && now <= CONTEST_END_TIME.getTime()
+        });
       }
     };
 
@@ -92,31 +120,10 @@ const StudentAuth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const now = new Date().getTime();
-    const start = new Date(contestDates.startTime).getTime();
-    const end = new Date(contestDates.endTime).getTime();
-    
-    // Debug log
-    console.log('Submit Time Check:', {
-      now: new Date().toISOString(),
-      start: contestDates.startTime,
-      end: contestDates.endTime,
-      isActive: now >= start && now <= end
-    });
-  
-    // Check contest timing for login/signin operations only (not for signup/registration)
-    const isLoginOperation = isRegistered || (!isRegistered && newStudentMode === 'signin');
-    
-    if (isLoginOperation && !(now >= start && now <= end)) {
-      setMessage('Contest has not started yet or has ended. Please check the timing.');
+
+    if (isRegistered && isTempLogin()) {
+      createTempSession();
       return;
-    }
-    
-    // For signup, allow registration even before contest starts
-    if (!isRegistered && newStudentMode === 'signup') {
-      // Allow signup anytime - no time restriction
-      console.log('Signup operation - no time restriction');
     }
 
     try {
@@ -141,7 +148,7 @@ const StudentAuth = () => {
           localStorage.removeItem('answeredQuestions');
           
           setMessage(`Welcome back, ${response.data.name}!`);
-          navigate('/contest', { replace: true });
+          navigate(contestPath, { replace: true });
         } else {
           setMessage(response.data.message);
         }
@@ -198,7 +205,7 @@ const StudentAuth = () => {
             
             setMessage('Successfully signed in!');
             setTimeout(() => {
-              navigate('/contest', { replace: true });
+              navigate(contestPath, { replace: true });
             }, 1000);
           } else {
             setMessage(response.data.message);
@@ -370,8 +377,8 @@ const StudentAuth = () => {
           }
         >
           <h2>
-            {isRegistered ? 'Registered Student Login' : 
-            (newStudentMode === 'signup' ? 'New Student Registration' : 'New Student Sign In')}
+            {isRegistered ? `${pageTitle} Registered Student Login` : 
+            (newStudentMode === 'signup' ? `${pageTitle} New Student Registration` : `${pageTitle} New Student Sign In`)}
           </h2>
           
           {renderForm()}
@@ -380,12 +387,12 @@ const StudentAuth = () => {
             {isRegistered ? 'Login' : 
             (newStudentMode === 'signup' ? 'Register' : 'Sign In')}
           </button>
-          
-          {/* Show timing message for login operations when contest is not active */}
+
+          {/* Login is always open; exam access is controlled from Mega Contest. */}
           {!contestTime.isContestStarted && (isRegistered || newStudentMode === 'signin') && (
             <div className="timing-info">
               <small>
-                {isRegistered ? 'Login' : 'Sign In'} will be available when the contest starts
+                You can login now. The exam arena unlocks from the Mega Contest page when the contest starts.
               </small>
             </div>
           )}

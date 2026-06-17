@@ -1,0 +1,103 @@
+.mega-contest-login-page {
+  min-height: 100vh;
+  background: #fff8f0;
+  color: #241d1f;
+}
+
+.mega-login-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
+  align-items: center;
+  gap: 2rem;
+  padding: 4rem clamp(1rem, 5vw, 5rem);
+  background:
+    linear-gradient(120deg, rgba(0, 48, 73, 0.94), rgba(214, 40, 40, 0.86)),
+    url('../../Assets/img/techno_contest.png') center/cover;
+}
+
+.mega-login-intro {
+  color: #fff;
+}
+
+.mega-login-kicker {
+  margin: 0 0 0.8rem;
+  color: #fcbf49;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.mega-login-intro h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 4.8rem);
+  line-height: 1;
+}
+
+.mega-login-intro p {
+  max-width: 620px;
+  margin: 1.3rem 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.mega-login-card {
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.mega-login-card h2 {
+  margin: 0 0 1rem;
+  color: #7f1d1d;
+}
+
+.mega-login-card form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mega-login-card label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4b3b3f;
+}
+
+.mega-login-card input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #e1d6d0;
+  border-radius: 6px;
+  padding: 0.7rem 0.8rem;
+  font-size: 0.95rem;
+}
+
+.mega-login-card input:focus {
+  border-color: #d62828;
+  box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.12);
+  outline: none;
+}
+
+.mega-login-card button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: #d62828;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mega-login-back {
+  width: 100%;
+  margin-top: 0.8rem;
+  background: #003049 !important;
+}
+
+@media (max-width: 820px) {
+  .mega-login-shell {
+    grid-template-columns: 1fr;
+    padding-top: 5rem;
+  }
+}
