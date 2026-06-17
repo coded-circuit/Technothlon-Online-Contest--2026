@@ -6,10 +6,49 @@ import CountdownTimer from '../components/Pages/Mega-Contest/CountdownTimer';
 import Footer from '../components/Pages/Mega-Contest/Footer';
 import PrizesSection from '../components/Pages/Mega-Contest/PrizesSection';
 import ResourcesGrid from '../components/Pages/Mega-Contest/ResourcesGrid';
-import { CONTEST_END_TIME, CONTEST_START_TIME } from '../config/contest';
 import useAuthContext from '../hooks/useAuthContext';
 
 const REGISTRATION_DISPLAY_OFFSET = 2000;
+
+const useContestSchedule = () => {
+  const [schedule, setSchedule] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSchedule = async () => {
+      try {
+        const response = await fetch('/api/contest/dates');
+        if (!response.ok) throw new Error('Unable to fetch contest dates');
+        const data = await response.json();
+        if (isMounted) {
+          setSchedule({
+            startTime: new Date(data.startTime),
+            endTime: new Date(data.endTime),
+          });
+        }
+      } catch (error) {
+        if (isMounted) setSchedule(null);
+      }
+    };
+
+    fetchSchedule();
+    const scheduleInterval = setInterval(fetchSchedule, 30000);
+    const clockInterval = setInterval(() => setNow(Date.now()), 1000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(scheduleInterval);
+      clearInterval(clockInterval);
+    };
+  }, []);
+
+  return {
+    schedule,
+    isContestEnded: schedule ? now > schedule.endTime.getTime() : false,
+  };
+};
 
 const useContestStats = () => {
   const [registeredCount, setRegisteredCount] = useState(null);
@@ -61,7 +100,7 @@ const StatsBlock = ({ countText, statsStatus }) => (
   </div>
 );
 
-const AboutTechnothlon = () => (
+const AboutTechnothlon = ({ isContestEnded = false }) => (
   <section className="rounded-2xl bg-white/70 p-5 shadow-xl shadow-sky-200/35 backdrop-blur">
     <div className="text-sm font-bold leading-7 text-slate-950">
       <p className="text-xs uppercase tracking-[0.22em] text-sky-700">
@@ -70,10 +109,19 @@ const AboutTechnothlon = () => (
       <h2 className="mt-3 text-3xl font-black text-sky-900">About Technothlon</h2>
       <button
         type="button"
-        onClick={() => window.open('https://technothlon.techniche.org.in/', '_blank', 'noopener,noreferrer')}
-        className="mt-2 text-left text-sm font-bold text-sky-800 underline underline-offset-4"
+        onClick={() => {
+          if (!isContestEnded) {
+            window.open('https://technothlon.techniche.org.in/', '_blank', 'noopener,noreferrer');
+          }
+        }}
+        disabled={isContestEnded}
+        className={`mt-2 text-left text-sm font-bold underline underline-offset-4 ${
+          isContestEnded
+            ? 'cursor-not-allowed text-slate-500 no-underline'
+            : 'text-sky-800'
+        }`}
       >
-        Register for Technothlon 2026 →
+        {isContestEnded ? 'Registration closed' : 'Register for Technothlon 2026 ->'}
       </button>
       <p className="mt-4">
         Technothlon is the International School Championship organized by the student
@@ -94,7 +142,7 @@ const AboutTechnothlon = () => (
   </section>
 );
 
-const RegisterCta = () => {
+const RegisterCta = ({ isContestEnded = false }) => {
   const navigate = useNavigate();
 
   return (
@@ -111,21 +159,23 @@ const RegisterCta = () => {
         </span>
       </h2>
       <p className="relative mt-2 text-sm font-semibold text-slate-600">
-        Register for Mega Contest and compete for exciting rewards.
+        {isContestEnded
+          ? 'Registration for Mega Contest is now closed.'
+          : 'Register for Mega Contest and compete for exciting rewards.'}
       </p>
       <button
         type="button"
-        onClick={() => navigate('/contest/login')}
-        className="relative mt-6 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-700 px-10 py-4 text-base font-black uppercase tracking-widest text-white shadow-xl shadow-blue-400/25 transition hover:-translate-y-1 hover:from-sky-500 hover:to-blue-600"
+        onClick={() => {
+          if (!isContestEnded) navigate('/contest/login');
+        }}
+        disabled={isContestEnded}
+        className={`relative mt-6 rounded-2xl px-10 py-4 text-base font-black uppercase tracking-widest shadow-xl transition ${
+          isContestEnded
+            ? 'cursor-not-allowed bg-slate-400 text-white shadow-slate-300/25'
+            : 'bg-gradient-to-r from-sky-600 to-blue-700 text-white shadow-blue-400/25 hover:-translate-y-1 hover:from-sky-500 hover:to-blue-600'
+        }`}
       >
-        Register Now
-      </button>
-      <button
-        type="button"
-        onClick={() => navigate('/contest/login')}
-        className="relative mt-3 block w-full text-sm font-black text-sky-700 underline underline-offset-4"
-      >
-        Individual Participation →
+        {isContestEnded ? 'Registration Closed' : 'Register Now'}
       </button>
     </section>
   );
@@ -192,26 +242,26 @@ const PageShell = ({ children, headerRight }) => (
   </div>
 );
 
-export const BeforeRegistration = ({ countText, statsStatus }) => (
+export const BeforeRegistration = ({ countText, statsStatus, isContestEnded }) => (
   <PageShell headerRight={<StatsBlock countText={countText} statsStatus={statsStatus} />}>
     <div className="grid gap-5">
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.66fr)]">
         <PrizesSection />
         <aside className="grid gap-5">
           <CountdownTimer />
-          <RegisterCta />
+          <RegisterCta isContestEnded={isContestEnded} />
         </aside>
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.66fr)]">
-        <AboutTechnothlon />
+      <section className="grid items-stretch gap-5 lg:grid-cols-2">
+        <AboutTechnothlon isContestEnded={isContestEnded} />
         <ResourcesGrid />
       </section>
     </div>
   </PageShell>
 );
 
-export const AfterRegistration = ({ countText, statsStatus }) => (
+export const AfterRegistration = ({ countText, statsStatus, isContestEnded, schedule }) => (
   <PageShell
     headerRight={
       <>
@@ -226,14 +276,14 @@ export const AfterRegistration = ({ countText, statsStatus }) => (
         <aside className="grid gap-5">
           <CountdownTimer />
           <ParticipateButton
-            contestStartTime={CONTEST_START_TIME}
-            contestEndTime={CONTEST_END_TIME}
+            contestStartTime={schedule?.startTime}
+            contestEndTime={schedule?.endTime}
           />
         </aside>
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.66fr)]">
-        <AboutTechnothlon />
+      <section className="grid items-stretch gap-5 lg:grid-cols-2">
+        <AboutTechnothlon isContestEnded={isContestEnded} />
         <ResourcesGrid />
       </section>
     </div>
@@ -243,15 +293,31 @@ export const AfterRegistration = ({ countText, statsStatus }) => (
 const MegaContest = ({ registrationState }) => {
   const { isAuthenticated } = useAuthContext();
   const { countText, statsStatus } = useContestStats();
+  const { schedule, isContestEnded } = useContestSchedule();
 
   if (registrationState === 'beforeRegistration') {
-    return <BeforeRegistration countText={countText} statsStatus={statsStatus} />;
+    return (
+      <BeforeRegistration
+        countText={countText}
+        statsStatus={statsStatus}
+        isContestEnded={isContestEnded}
+      />
+    );
   }
 
   return isAuthenticated ? (
-    <AfterRegistration countText={countText} statsStatus={statsStatus} />
+    <AfterRegistration
+      countText={countText}
+      statsStatus={statsStatus}
+      isContestEnded={isContestEnded}
+      schedule={schedule}
+    />
   ) : (
-    <BeforeRegistration countText={countText} statsStatus={statsStatus} />
+    <BeforeRegistration
+      countText={countText}
+      statsStatus={statsStatus}
+      isContestEnded={isContestEnded}
+    />
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const getPhase = (contestStartTime, contestEndTime) => {
+  if (!contestStartTime || !contestEndTime) return 'unavailable';
   const now = Date.now();
   if (now < contestStartTime.getTime()) return 'before';
   if (now > contestEndTime.getTime()) return 'ended';
@@ -10,21 +11,45 @@ const getPhase = (contestStartTime, contestEndTime) => {
 
 const ParticipateButton = ({ contestStartTime, contestEndTime, isContestActive = null }) => {
   const navigate = useNavigate();
+  const [contestWindow, setContestWindow] = useState({ startTime: contestStartTime, endTime: contestEndTime });
   const [phase, setPhase] = useState(() => getPhase(contestStartTime, contestEndTime));
   const [activeStatus, setActiveStatus] = useState(isContestActive);
+  const [scheduleStatus, setScheduleStatus] = useState('loading');
+  const [attemptStatus, setAttemptStatus] = useState({ isStarted: false, isCompleted: false });
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPhase(getPhase(contestStartTime, contestEndTime));
+      setPhase(getPhase(contestWindow.startTime, contestWindow.endTime));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [contestEndTime, contestStartTime]);
+  }, [contestWindow]);
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchStatus = async () => {
+      try {
+        const datesResponse = await fetch('/api/contest/dates');
+        if (datesResponse.ok) {
+          const dates = await datesResponse.json();
+          if (isMounted) {
+            setContestWindow({
+              startTime: new Date(dates.startTime),
+              endTime: new Date(dates.endTime),
+            });
+            setScheduleStatus('ready');
+          }
+        } else {
+          throw new Error('Unable to load contest dates');
+        }
+      } catch (error) {
+        if (isMounted) {
+          setContestWindow({ startTime: null, endTime: null });
+          setScheduleStatus('error');
+        }
+      }
+
       if (typeof isContestActive === 'boolean') {
         setActiveStatus(isContestActive);
         return;
@@ -40,6 +65,22 @@ const ParticipateButton = ({ contestStartTime, contestEndTime, isContestActive =
       } catch (error) {
         if (isMounted) setActiveStatus(isContestActive);
       }
+
+      try {
+        const phone = localStorage.getItem('userPhone');
+        if (!phone) return;
+        const scoreResponse = await fetch(`/api/contest/score?phone=${encodeURIComponent(phone)}`);
+        if (!scoreResponse.ok) throw new Error('Unable to load contest attempt status');
+        const scoreData = await scoreResponse.json();
+        if (isMounted) {
+          setAttemptStatus({
+            isStarted: Boolean(scoreData.isStarted),
+            isCompleted: Boolean(scoreData.isCompleted),
+          });
+        }
+      } catch (error) {
+        if (isMounted) setAttemptStatus({ isStarted: false, isCompleted: false });
+      }
     };
 
     fetchStatus();
@@ -48,9 +89,33 @@ const ParticipateButton = ({ contestStartTime, contestEndTime, isContestActive =
       isMounted = false;
       clearInterval(interval);
     };
-  }, [isContestActive]);
+  }, [contestEndTime, contestStartTime, isContestActive]);
 
   const buttonState = useMemo(() => {
+    if (scheduleStatus === 'error' || phase === 'unavailable') {
+      return {
+        disabled: true,
+        label: 'Contest timing unavailable',
+        status: 'Please refresh after a moment.',
+      };
+    }
+
+    if (attemptStatus.isCompleted) {
+      return {
+        disabled: true,
+        label: 'You have submitted the contest',
+        status: 'Your contest attempt is already submitted.',
+      };
+    }
+
+    if (attemptStatus.isStarted) {
+      return {
+        disabled: true,
+        label: 'Contest already in progress',
+        status: 'Your contest attempt has already started.',
+      };
+    }
+
     if (phase === 'ended') {
       return {
         disabled: true,
@@ -72,7 +137,7 @@ const ParticipateButton = ({ contestStartTime, contestEndTime, isContestActive =
       label: 'Contest Not Started Yet',
       status: '⏳ Contest begins 21 June 2026, 11:00 AM IST',
     };
-  }, [activeStatus, phase]);
+  }, [activeStatus, attemptStatus, phase, scheduleStatus]);
 
   return (
     <section className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-100 via-white to-blue-100 p-6 text-center shadow-xl shadow-sky-300/25 backdrop-blur">

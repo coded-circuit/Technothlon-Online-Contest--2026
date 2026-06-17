@@ -18,37 +18,6 @@ import starLogo from '../../Assets/img/star.png';
 import rightLogo from '../../Assets/img/techniche_logo.png';
 import birdLogo from '../../Assets/img/bird_logo1.png';
 import arcImage from '../../Assets/img/arc.png';
-import { CONTEST_END_TIME, CONTEST_START_TIME } from '../../../config/contest';
-
-const localDemoQuestions = [
-    {
-        id: 1,
-        letter: 'A',
-        title: 'Number Trail',
-        points: 300,
-        content: 'Find the next number in the sequence:\n2, 6, 12, 20, 30, ?',
-        attempted: false,
-        answered: false
-    },
-    {
-        id: 2,
-        letter: 'B',
-        title: 'Clock Puzzle',
-        points: 600,
-        content: 'A clock gains 5 minutes every hour. If it is set correctly at 8:00 AM, what time will it show after 6 real hours?',
-        attempted: false,
-        answered: false
-    },
-    {
-        id: 3,
-        letter: 'C',
-        title: 'Logic Grid',
-        points: 1000,
-        content: 'Three students scored different marks: 70, 80, and 90. A scored more than B. C did not score 70. What is A score?',
-        attempted: false,
-        answered: false
-    }
-];
 
 function Contest() {
     const baseURL = process.env.NODE_ENV === "production" ? "https://technothlon.techniche.org.in" : "http://localhost:3001";
@@ -83,6 +52,7 @@ function Contest() {
     });
     const [totalTimeSpent, setTotalTimeSpent] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
+    const [attemptLocked, setAttemptLocked] = useState(false);
 
     // Check user authentication
     useEffect(() => {
@@ -166,10 +136,7 @@ function Contest() {
                 }
             } catch (error) {
                 console.error('Error fetching times:', error);
-                setContestDates({
-                    startTime: CONTEST_START_TIME,
-                    endTime: CONTEST_END_TIME
-                });
+                setError('Error fetching contest schedule');
             }
         };
 
@@ -205,10 +172,7 @@ function Contest() {
                 }
             } catch (error) {
                 console.error('Error fetching contest dates:', error);
-                setContestDates({
-                    startTime: CONTEST_START_TIME,
-                    endTime: CONTEST_END_TIME
-                });
+                setError('Error fetching contest dates');
             }
         };
 
@@ -276,8 +240,7 @@ function Contest() {
             }));
         } catch (error) {
             console.error('Error fetching questions:', error);
-            setQuestions(localDemoQuestions);
-            setError('');
+            setError('Failed to load questions. Please try again.');
         }
     };
 
@@ -302,7 +265,14 @@ function Contest() {
                 studentType: studentType1
             });
 
-            if (response.data.success) {
+            if (response.data.allowed === false) {
+                setError('You have already attempted this contest');
+                setAttemptLocked(true);
+                setOpenDialog(false);
+                return;
+            }
+
+            if (response.data.allowed === true || response.data.success) {
                 // Set contest times
                 const startTime = new Date();
                 const endTime = new Date(startTime.getTime() + 3600000); // 1 hour
@@ -325,19 +295,13 @@ function Contest() {
             }
         } catch (error) {
             console.error('Contest start error:', error);
-            const startTime = new Date();
-            const endTime = new Date(startTime.getTime() + 3600000);
-
-            localStorage.setItem('contestStartTime', startTime.toISOString());
-            localStorage.setItem('contestEndTime', endTime.toISOString());
-            localStorage.setItem('sessionToken', `LOCAL-CONTEST-${Date.now()}`);
-            localStorage.setItem('isContestActive', 'true');
-
-            setQuestions(localDemoQuestions);
-            setContestStarted(true);
-            setContestTimeLeft(3600);
-            setOpenDialog(false);
-            setError('');
+            if (error.response?.data?.allowed === false) {
+                setError('You have already attempted this contest');
+                setAttemptLocked(true);
+                setOpenDialog(false);
+                return;
+            }
+            setError(error.response?.data?.message || error.message || 'Failed to start contest');
         } finally {
             setIsLoading(false);
         }
@@ -476,7 +440,7 @@ function Contest() {
                         
                     {/* </div> */}
 
-
+                        {!attemptLocked && (
                         <div className="start-section-c">
                             <button 
                                 className="start-button" 
@@ -486,6 +450,7 @@ function Contest() {
                                 <span>{isLoading ? 'Starting...' : '🚀 Start Contest'}</span>
                             </button>
                     </div>
+                        )}
                 </div>
 
 

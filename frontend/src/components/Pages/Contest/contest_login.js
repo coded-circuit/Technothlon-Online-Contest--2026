@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './contest_login.css';
 import AnimatedCountdown from '../../design/countdown';
-import { CONTEST_END_TIME, CONTEST_START_TIME } from '../../../config/contest';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Button } from '@mui/material';
@@ -18,15 +17,6 @@ const toProperCase = (str) => {
     .join(' ');
 };
 
-const TEMP_LOGIN = {
-  rollNumber: 'TEMP123456',
-  phone: '9999999999',
-  name: 'Mega Contest Tester',
-  email: 'mega.tester@technothlon.test',
-  school: 'Technothlon Test School',
-  city: 'Guwahati',
-};
- 
 const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) => {
   const navigate = useNavigate();
   const baseURL = process.env.NODE_ENV === "production" ? "https://technothlon.techniche.org.in" : "http://localhost:3001";
@@ -45,31 +35,15 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
   const [contestTime, setContestTime] = useState({
     startTime: null,
     endTime: null,
-    isContestStarted: false
+    hasContestStarted: false,
+    isContestStarted: false,
+    isContestEnded: false
   });
+  const [deviceRegistrationBlocked, setDeviceRegistrationBlocked] = useState(false);
 
-  const createTempSession = () => {
-    const now = Date.now();
-    localStorage.setItem('sessionId', `TEMP-MEGA-${now}`);
-    localStorage.setItem('userName', TEMP_LOGIN.name);
-    localStorage.setItem('userPhone', TEMP_LOGIN.phone);
-    localStorage.setItem('userEmail', TEMP_LOGIN.email);
-    localStorage.setItem('userRoll', TEMP_LOGIN.rollNumber);
-    localStorage.setItem('userSchool', TEMP_LOGIN.school);
-    localStorage.setItem('userCity', TEMP_LOGIN.city);
-    localStorage.setItem('usertype', 'temporary');
-    localStorage.removeItem('contestStartTime');
-    localStorage.removeItem('contestEndTime');
-    localStorage.removeItem('answeredQuestions');
-
-    setMessage(`Welcome back, ${TEMP_LOGIN.name}!`);
-    navigate(contestPath, { replace: true });
-  };
-
-  const isTempLogin = () => (
-    formData.rollNumber.trim().toUpperCase() === TEMP_LOGIN.rollNumber &&
-    formData.phone.trim() === TEMP_LOGIN.phone
-  );
+  useEffect(() => {
+    setDeviceRegistrationBlocked(localStorage.getItem('device_registered') === 'true');
+  }, []);
 
   useEffect(() => {
     const fetchContestTimes = async () => {
@@ -88,6 +62,8 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
         const endTS = endTimeDate.getTime();
 
         const isContestActive = nowTS >= startTS && nowTS <= endTS;
+        const hasContestStarted = nowTS >= startTS;
+        const isContestEnded = nowTS > endTS;
         
         // console.log('Time Debug:', {
         //   now: now.toISOString(),
@@ -99,16 +75,19 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
         setContestTime({
           startTime: startTimeDate,
           endTime: endTimeDate,
-          isContestStarted: isContestActive
+          hasContestStarted,
+          isContestStarted: isContestActive,
+          isContestEnded
         });
 
       } catch (error) {
         console.error('Error fetching contest times:', error);
-        const now = Date.now();
         setContestTime({
-          startTime: CONTEST_START_TIME,
-          endTime: CONTEST_END_TIME,
-          isContestStarted: now >= CONTEST_START_TIME.getTime() && now <= CONTEST_END_TIME.getTime()
+          startTime: null,
+          endTime: null,
+          hasContestStarted: false,
+          isContestStarted: false,
+          isContestEnded: false
         });
       }
     };
@@ -121,8 +100,13 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isRegistered && isTempLogin()) {
-      createTempSession();
+    if (!isRegistered && newStudentMode === 'signup' && deviceRegistrationBlocked) {
+      setMessage('This device has already been used to register.');
+      return;
+    }
+
+    if (!isRegistered && newStudentMode === 'signup' && contestTime.hasContestStarted) {
+      setMessage('Registration is now closed. Contest has started.');
       return;
     }
 
@@ -168,6 +152,8 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
           const response = await axios.post(`${baseURL}/api/auth/register-new`, formattedData);
 
           if (response.data.success) {
+            localStorage.setItem('device_registered', 'true');
+            setDeviceRegistrationBlocked(true);
             setMessage(response.data.message);
             // Clear form data except email and phone for signin
             const signinData = {
@@ -213,11 +199,23 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
         }
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || 'An error occurred');
+      if (error.code === 'ERR_NETWORK') {
+        setMessage('Backend server is not reachable. Please start the backend on port 3001.');
+      } else {
+        setMessage(error.response?.data?.message || error.message || 'An error occurred');
+      }
     }
   };
 
   // Update the signin form inputs
+  const isSignupBlocked = !isRegistered && newStudentMode === 'signup' && (
+    deviceRegistrationBlocked || contestTime.hasContestStarted
+  );
+
+  const signupBlockMessage = deviceRegistrationBlocked
+    ? 'This device has already been used to register.'
+    : 'Registration is now closed. Contest has started.';
+
   const renderForm = () => {
     if (isRegistered) {
       return (
@@ -264,6 +262,11 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
         </div>
 
         {newStudentMode === 'signup' ? (
+          isSignupBlocked ? (
+            <div className="timing-info">
+              <small>{signupBlockMessage}</small>
+            </div>
+          ) : (
           <>
             <input
               type="text"
@@ -301,6 +304,7 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
               required
             />
           </>
+          )
         ) : (
           <>
             <input
@@ -325,6 +329,8 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
 
   console.log('Contest Status:', {
     isContestStarted: contestTime.isContestStarted,
+    isContestEnded: contestTime.isContestEnded,
+    hasContestStarted: contestTime.hasContestStarted,
     now: new Date().toISOString(),
     startTime: contestTime.startTime?.toISOString(),
     endTime: contestTime.endTime?.toISOString()
@@ -337,7 +343,9 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
           {contestTime.startTime && (
             <>
               <h3 className="contest-status">
-                {!contestTime.isContestStarted 
+                {contestTime.isContestEnded
+                  ? "Contest has ended"
+                  : !contestTime.isContestStarted 
                   ? "Contest starts in:" 
                   : "Contest ends in:"}
               </h3>
@@ -383,10 +391,18 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
           
           {renderForm()}
 
-          <button type="submit" className="submit-button">
-            {isRegistered ? 'Login' : 
-            (newStudentMode === 'signup' ? 'Register' : 'Sign In')}
+          <button type="submit" className="submit-button" disabled={isSignupBlocked}>
+            {isSignupBlocked
+              ? 'Registration Closed'
+              : isRegistered ? 'Login' : 
+              (newStudentMode === 'signup' ? 'Register' : 'Sign In')}
           </button>
+
+          {isSignupBlocked && (
+            <div className="timing-info">
+              <small>{signupBlockMessage}</small>
+            </div>
+          )}
 
           {/* Login is always open; exam access is controlled from Mega Contest. */}
           {!contestTime.isContestStarted && (isRegistered || newStudentMode === 'signin') && (
@@ -403,7 +419,7 @@ const StudentAuth = ({ pageTitle = 'Contest', contestPath = '/mega-contest' }) =
       
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/mega-contest')}
         className="back-button"
         variant="contained"
       >

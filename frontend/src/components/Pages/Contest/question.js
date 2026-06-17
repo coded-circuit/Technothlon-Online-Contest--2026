@@ -3,24 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Question.css";
 
-const localDemoQuestions = {
-  1: {
-    title: "Number Trail",
-    content: "Find the next number in the sequence:\n2, 6, 12, 20, 30, ?",
-    points: 300
-  },
-  2: {
-    title: "Clock Puzzle",
-    content: "A clock gains 5 minutes every hour. If it is set correctly at 8:00 AM, what time will it show after 6 real hours?",
-    points: 600
-  },
-  3: {
-    title: "Logic Grid",
-    content: "Three students scored different marks: 70, 80, and 90. A scored more than B. C did not score 70. What is A score?",
-    points: 1000
-  }
-};
-
 function Question() {
   const baseURL = process.env.NODE_ENV === "production" ? "https://technothlon.techniche.org.in" : "http://localhost:3001";
 
@@ -103,8 +85,12 @@ function Question() {
         setQuestion(response.data);
       } catch (error) {
         console.error("Error fetching question:", error);
-        setQuestion(localDemoQuestions[id] || localDemoQuestions[1]);
-        setError("");
+        setError("Failed to load question. Please try again or contact support.");
+        if (error.response?.status === 404) {
+          setTimeout(() => {
+            navigate('/contest');
+          }, 3000);
+        }
       }
     };
 
@@ -206,15 +192,7 @@ function Question() {
         setTimeout(() => navigate('/contest'), 1000);
       }
     } catch (error) {
-      const answeredQuestions = JSON.parse(localStorage.getItem('answeredQuestions') || '[]');
-      if (!answeredQuestions.includes(id)) {
-        answeredQuestions.push(id);
-        localStorage.setItem('answeredQuestions', JSON.stringify(answeredQuestions));
-      }
-      localStorage.setItem(`localAnswer_question_${id}`, answer);
-      setIsSubmitted(true);
-      setError("");
-      setTimeout(() => navigate('/contest'), 1000);
+      setError(error.response?.data?.message || "Failed to submit answer");
     }
   };
 

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const ContestScore = require('../models/contest-score');
 const Contest = require('../models/contest');
 const crypto = require('crypto');
@@ -9,7 +10,235 @@ const { convertToIST } = require('../utils/timeUtils');
 const Offline26 = require('../models/Offline26'); // Import Offline25 model
 const newStudent = require('../models/newStudent'); // Import newStudent model
 const cosStudent = require('../models/cos_student'); //COS Students
+
+const isDbReady = () => mongoose.connection.readyState === 1;
+const cleanPhoneNumber = (phone = '') => phone.trim().replace(/\D/g, '');
+
+const dryRunStudents = new Map();
+const dryRunScores = new Map();
+const dryRunContest = {
+    contest: 'Math Logic Challenge',
+    startTime: new Date(Date.now() - 60 * 1000),
+    endTime: new Date(Date.now() + 60 * 60 * 1000),
+    questions: [
+        {
+            questionId: 1,
+            letter: 'A',
+            title: 'Lost Sequences in Number Maze',
+            content: 'Stuart and Bob devise a path to follow.\nStuart writes down the first six intervals for a break:\n0 1 2 3 4 5\nEach subsequent interval is the last digit of the sum of the previous six intervals.\nStuart starts scribbling down the entire sequence of intervals.\nHelp Bob find out which of the following subsequences will never occur.\n\nA) 1 3 5 7 9\nB) 9 7 5 3 1\nC) 3 1 5 9 7\nD) All\n\nType 1 for A, 2 for B, 3 for C, and 4 for D.',
+            answer: '1',
+            points: 300
+        },
+        {
+            questionId: 2,
+            letter: 'B',
+            title: 'Bamboo Breakfast: Slicing to Share',
+            content: 'A group of 60 explorers find themselves with only 47 identical bamboo sticks for breakfast.\nTo ensure fairness, they decide that each person must receive an exactly equal portion of bamboo.\nThey have a sharp sword that can be used to cut through several sticks at once.\nWhat is the minimum number of cuts required to divide the 47 bamboo sticks so that all 60 explorers receive equal shares?\n\n(Note: A single cut can go through multiple sticks at once.)',
+            answer: '3',
+            points: 600
+        },
+        {
+            questionId: 3,
+            letter: 'C',
+            title: "The Leader's Last Apple",
+            content: 'Thor places two boxes - one containing 15 apples and the other containing 12 apples. He tells Dora that a person can either eat an equal number of apples from both boxes or any number of apples from just one box.\nThe player who eats the last apple wins. Thor then asks Dora to make the first move.\nHow many apples should Dora eat in her first move to ensure a win?',
+            answer: '16',
+            points: 1000
+        }
+    ]
+};
+
+const getDryRunStudentKey = (email, phone) => `${email.trim().toLowerCase()}::${cleanPhoneNumber(phone)}`;
+
+const getContestStartTime = async () => {
+    if (!isDbReady()) return dryRunContest.startTime;
+
+    const contest = await Contest.findOne()
+        .sort({ createdAt: -1 })
+        .select('startTime');
+
+    return contest?.startTime || null;
+};
+
+const isRegistrationClosed = async () => {
+    const contestStartTime = await getContestStartTime();
+    return Boolean(contestStartTime && new Date() >= contestStartTime);
+};
  
+const checkContestStudent = async (rollNumber, phone) => {
+    const cleanRollNumber = rollNumber.trim().toUpperCase();
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    const student = await Offline26.findOne({ rollNumber: cleanRollNumber });
+
+    if (!student) return null;
+
+    const isStudent1 = student.contact1 === cleanPhone;
+    const isStudent2 = student.contact2 === cleanPhone;
+
+    if (!isStudent1 && !isStudent2) return null;
+
+    return {
+        exists: true,
+        name: isStudent1 ? student.name1 : student.name2,
+        email: isStudent1 ? student.email1 : student.email2,
+        phone: isStudent1 ? student.contact1 : student.contact2,
+        school: isStudent1 ? student.school1 : student.school2,
+        studentType: 'offline',
+        rollNumber: cleanRollNumber
+    };
+};
+
+router.post('/auth/check-student', async (req, res) => {
+    try {
+        const { rollNumber, phone } = req.body;
+
+        if (!rollNumber || !phone) {
+            return res.status(400).json({ exists: false, message: 'Roll number and phone number are required' });
+        }
+
+        const student = await checkContestStudent(rollNumber, phone);
+
+        if (!student) {
+            return res.json({ exists: false, message: 'Student not found or details do not match.' });
+        }
+
+        res.json(student);
+    } catch (error) {
+        console.error('Contest auth check-student error:', error);
+        res.status(500).json({ exists: false, message: 'Internal server error' });
+    }
+});
+
+const registerNewStudent = async (req, res) => {
+    try {
+        const { name, email, phone, school, city } = req.body;
+
+        if (!name || !email || !phone || !school || !city) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+
+        if (await isRegistrationClosed()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Registration closed. Contest has started.'
+            });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPhone = cleanPhoneNumber(phone);
+
+        if (!isDbReady()) {
+            const studentKey = getDryRunStudentKey(cleanEmail, cleanPhone);
+            if (dryRunStudents.has(studentKey)) {
+                return res.json({
+                    success: false,
+                    message: 'Student already exists. Please sign in.',
+                    shouldSignIn: true
+                });
+            }
+
+            dryRunStudents.set(studentKey, {
+                name: name.trim(),
+                email: cleanEmail,
+                phone: cleanPhone,
+                school: school.trim(),
+                city: city.trim(),
+                studentType: 'new'
+            });
+
+            return res.json({ success: true, message: 'Dry-run registration successful. Please sign in.' });
+        }
+
+        const existingStudent = await newStudent.findOne({
+            $or: [{ email: cleanEmail }, { phone: cleanPhone }]
+        });
+
+        if (existingStudent) {
+            return res.json({
+                success: false,
+                message: 'Student already exists. Please sign in.',
+                shouldSignIn: true
+            });
+        }
+
+        await newStudent.create({
+            name: name.trim(),
+            email: cleanEmail,
+            phone: cleanPhone,
+            school: school.trim(),
+            city: city.trim(),
+            registered: true
+        });
+
+        res.json({ success: true, message: 'Registration successful. Please sign in.' });
+    } catch (error) {
+        console.error('Contest new student registration error:', error);
+        res.status(500).json({ success: false, message: 'Error registering student' });
+    }
+};
+
+router.post('/auth/register-new', registerNewStudent);
+router.post('/auth/signup', registerNewStudent);
+
+router.post('/auth/signin-new', async (req, res) => {
+    try {
+        const { email, phone } = req.body;
+
+        if (!email || !phone) {
+            return res.status(400).json({ success: false, message: 'Email and phone number are required' });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPhone = cleanPhoneNumber(phone);
+
+        if (!isDbReady()) {
+            const student = dryRunStudents.get(getDryRunStudentKey(cleanEmail, cleanPhone)) || {
+                name: 'Dry Run Student',
+                email: cleanEmail,
+                phone: cleanPhone,
+                city: 'Local',
+                school: 'Local Test School',
+                studentType: 'new'
+            };
+
+            dryRunStudents.set(getDryRunStudentKey(cleanEmail, cleanPhone), student);
+
+            return res.json({
+                success: true,
+                name: student.name,
+                email: student.email,
+                phone: student.phone,
+                city: student.city,
+                school: student.school,
+                studentType: 'new',
+                dryRun: true
+            });
+        }
+
+        const student = await newStudent.findOne({
+            email: cleanEmail,
+            phone: cleanPhone
+        });
+
+        if (!student) {
+            return res.json({ success: false, message: 'Student not found. Please sign up first.' });
+        }
+
+        res.json({
+            success: true,
+            name: student.name,
+            email: student.email,
+            phone: student.phone,
+            city: student.city,
+            school: student.school,
+            studentType: 'new'
+        });
+    } catch (error) {
+        console.error('Contest new student signin error:', error);
+        res.status(500).json({ success: false, message: 'Error signing in student' });
+    }
+});
+
 // Start contest
 router.post('/contest/start', async (req, res) => {
     try {
@@ -30,13 +259,69 @@ router.post('/contest/start', async (req, res) => {
             });
         }
 
-        const cleanPhone = phone.trim().replace(/\D/g, '');
+        const cleanPhone = cleanPhoneNumber(phone);
+
+        if (!isDbReady()) {
+            const existingContest = dryRunScores.get(cleanPhone);
+            if (existingContest?.isStarted) {
+                return res.status(403).json({
+                    allowed: false,
+                    message: 'You have already attempted this contest'
+                });
+            }
+
+            const sessionToken = crypto.randomBytes(32).toString('hex');
+            const contest = {
+                phone: cleanPhone,
+                name,
+                school,
+                student: studentType,
+                startTime: new Date(),
+                endTime: new Date(Date.now() + 60 * 60 * 1000),
+                isStarted: true,
+                isCompleted: false,
+                sessionId: sessionToken,
+                answers: [],
+                scores: { question1: 0, question2: 0, question3: 0, total: 0 }
+            };
+
+            dryRunScores.set(cleanPhone, contest);
+
+            return res.json({
+                allowed: true,
+                success: true,
+                message: 'Dry-run contest started successfully',
+                startTime: contest.startTime.toISOString(),
+                endTime: contest.endTime.toISOString(),
+                sessionToken,
+                studentType
+            });
+        }
         
         // Check if already participated
         const existingContest = await ContestScore.findOne({ phone: cleanPhone });
         if (existingContest) {
-            return res.status(400).json({ 
-                message: 'This phone number has already participated in the contest'
+            if (existingContest.isStarted) {
+                return res.status(403).json({
+                    allowed: false,
+                    message: 'You have already attempted this contest'
+                });
+            }
+
+            existingContest.isStarted = true;
+            existingContest.startTime = new Date();
+            existingContest.endTime = new Date(Date.now() + 60 * 60 * 1000);
+            existingContest.sessionId = crypto.randomBytes(32).toString('hex');
+            await existingContest.save();
+
+            return res.status(200).json({
+                allowed: true,
+                success: true,
+                message: 'Contest started successfully',
+                startTime: existingContest.startTime.toISOString(),
+                endTime: existingContest.endTime.toISOString(),
+                sessionToken: existingContest.sessionId,
+                studentType
             });
         }
 
@@ -69,6 +354,7 @@ router.post('/contest/start', async (req, res) => {
         await contest.save();
 
         res.json({ 
+            allowed: true,
             success: true, 
             message: 'Contest started successfully',
             startTime: contest.startTime.toISOString(),
@@ -87,11 +373,87 @@ router.post('/contest/start', async (req, res) => {
     }
 });
 
+router.get('/contest/score', async (req, res) => {
+    try {
+        const { phone } = req.query;
+
+        if (!phone) {
+            return res.status(400).json({ message: 'Phone number is required' });
+        }
+
+        if (!isDbReady()) {
+            const contestScore = dryRunScores.get(cleanPhoneNumber(phone));
+            return res.json({
+                isStarted: Boolean(contestScore?.isStarted),
+                isCompleted: Boolean(contestScore?.isCompleted)
+            });
+        }
+
+        const contestScore = await ContestScore.findOne({
+            phone: cleanPhoneNumber(phone)
+        });
+
+        res.json({
+            isStarted: Boolean(contestScore?.isStarted),
+            isCompleted: Boolean(contestScore?.isCompleted)
+        });
+    } catch (error) {
+        console.error('Contest score status error:', error);
+        res.status(500).json({ message: 'Error fetching contest score status' });
+    }
+});
+
 // Submit answer
 router.post('/contest/submit', async (req, res) => {
     try {
         const { questionId, answer, phone, timeSpentArray } = req.body;
         const submissionTime = new Date();
+
+        if (!isDbReady()) {
+            const cleanPhone = cleanPhoneNumber(phone);
+            const contestScore = dryRunScores.get(cleanPhone);
+            if (!contestScore) {
+                return res.status(404).json({ message: 'Contest not found' });
+            }
+
+            const question = dryRunContest.questions.find(q => q.questionId === questionId);
+            if (!question) {
+                return res.status(404).json({ message: 'Question not found' });
+            }
+
+            const normalizedAnswer = String(answer || '').trim().toLowerCase();
+            const isCorrect = normalizedAnswer === String(question.answer).toLowerCase();
+            const score = isCorrect ? question.points : 0;
+            const newAnswer = {
+                questionId,
+                answer,
+                submissionTime,
+                timeSpentArray,
+                totalTimeSpent: Array.isArray(timeSpentArray) ? timeSpentArray.reduce((sum, time) => sum + time, 0) : 0,
+                attempted: true,
+                isCorrect,
+                score
+            };
+
+            const existingAnswerIndex = contestScore.answers.findIndex(a => a.questionId === questionId);
+            if (existingAnswerIndex !== -1) {
+                contestScore.answers[existingAnswerIndex] = newAnswer;
+            } else {
+                contestScore.answers.push(newAnswer);
+            }
+
+            contestScore.scores[`question${questionId}`] = score;
+            contestScore.scores.total = contestScore.answers.reduce((total, ans) => total + ans.score, 0);
+            dryRunScores.set(cleanPhone, contestScore);
+
+            return res.json({
+                success: true,
+                isCorrect,
+                score,
+                totalScore: contestScore.scores.total,
+                questionScores: contestScore.scores
+            });
+        }
 
         let contestScore = await ContestScore.findOne({ phone });
         if (!contestScore) {
@@ -206,6 +568,27 @@ router.post('/contest/end', async (req, res) => {
             return res.status(400).json({ message: 'Phone number is required' });
         }
 
+        if (!isDbReady()) {
+            const cleanPhone = cleanPhoneNumber(phone);
+            const contest = dryRunScores.get(cleanPhone);
+            if (!contest || !contest.isStarted || contest.isCompleted) {
+                return res.status(404).json({ message: 'No active contest found' });
+            }
+
+            contest.isCompleted = true;
+            contest.endTime = new Date();
+            contest.totalTimeSpent = Math.floor((contest.endTime - contest.startTime) / 1000);
+            dryRunScores.set(cleanPhone, contest);
+
+            return res.json({
+                message: 'Dry-run contest ended successfully',
+                endTime: contest.endTime,
+                totalTimeSpent: contest.totalTimeSpent,
+                scores: contest.scores,
+                shouldClearStorage: true
+            });
+        }
+
         const contest = await ContestScore.findOne({ 
             phone: phone.trim(),
             isStarted: true,
@@ -246,6 +629,25 @@ router.post('/contest/end', async (req, res) => {
 router.get('/contest/times', async (req, res) => {
     try {
         const { phone, sessionId } = req.query;
+
+        if (!isDbReady()) {
+            const userContest = phone ? dryRunScores.get(cleanPhoneNumber(phone)) : null;
+            const individualTimer = userContest && sessionId === userContest.sessionId ? {
+                startTime: userContest.startTime.toISOString(),
+                endTime: userContest.endTime.toISOString(),
+                timeLeft: Math.max(0, userContest.endTime - new Date())
+            } : null;
+
+            return res.json({
+                schedule: {
+                    startTime: dryRunContest.startTime.toISOString(),
+                    endTime: dryRunContest.endTime.toISOString(),
+                },
+                individualTimer,
+                timezone: 'Asia/Kolkata',
+                dryRun: true
+            });
+        }
 
         // Get global contest schedule
         const contestSchedule = await Contest.findOne()
@@ -301,6 +703,15 @@ router.get('/contest/times', async (req, res) => {
 // Get contest dates
 router.get('/contest/dates', async (req, res) => {
     try {
+        if (!isDbReady()) {
+            return res.json({
+                startTime: dryRunContest.startTime.toISOString(),
+                endTime: dryRunContest.endTime.toISOString(),
+                timezone: 'Asia/Kolkata',
+                dryRun: true
+            });
+        }
+
         const contest = await Contest.findOne()
             .sort({ createdAt: -1 })
             .select('startTime endTime');
@@ -323,10 +734,52 @@ router.get('/contest/dates', async (req, res) => {
     }
 });
 
+router.get('/contest/status', async (req, res) => {
+    try {
+        if (!isDbReady()) {
+            const now = new Date();
+            return res.json({
+                isContestActive: now >= dryRunContest.startTime && now <= dryRunContest.endTime,
+                dryRun: true
+            });
+        }
+
+        const contest = await Contest.findOne()
+            .sort({ createdAt: -1 })
+            .select('startTime endTime');
+
+        if (!contest) {
+            return res.status(404).json({ message: 'No contest found', isContestActive: false });
+        }
+
+        const now = new Date();
+        res.json({
+            isContestActive: now >= contest.startTime && now <= contest.endTime
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching contest status', isContestActive: false });
+    }
+});
+
 // Get question by ID
 router.get('/contest/questions/:id', async (req, res) => {
     try {
         const questionId = parseInt(req.params.id);
+
+        if (!isDbReady()) {
+            const question = dryRunContest.questions.find(q => q.questionId === questionId);
+            if (!question) {
+                return res.status(404).json({ message: 'Question not found' });
+            }
+
+            return res.json({
+                title: question.title,
+                content: question.content,
+                points: question.points,
+                letter: question.letter,
+                dryRun: true
+            });
+        }
         
         // Find the latest contest and get the specific question
         const contest = await Contest.findOne()

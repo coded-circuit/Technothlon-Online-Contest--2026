@@ -12,7 +12,7 @@ const connectDB = async () => {
     }
     catch (error) {
         console.log(`Error: ${error.message}`);
-        process.exit();
+        console.log('MongoDB unavailable. Starting server with local dry-run fallback routes.');
     }
 };
 

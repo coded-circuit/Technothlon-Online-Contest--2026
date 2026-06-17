@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CONTEST_END_TIME, CONTEST_START_TIME } from '../../../config/contest';
 
 const getTimeParts = (targetTime) => {
   const difference = targetTime.getTime() - Date.now();
@@ -17,22 +16,22 @@ const getTimeParts = (targetTime) => {
   };
 };
 
-const getTimerState = () => {
+const getTimerState = (startTime, endTime) => {
   const now = Date.now();
 
-  if (now < CONTEST_START_TIME.getTime()) {
+  if (now < startTime.getTime()) {
     return {
       title: 'Contest starts in',
       message: null,
-      time: getTimeParts(CONTEST_START_TIME),
+      time: getTimeParts(startTime),
     };
   }
 
-  if (now < CONTEST_END_TIME.getTime()) {
+  if (now < endTime.getTime()) {
     return {
       title: 'Contest ends in',
       message: null,
-      time: getTimeParts(CONTEST_END_TIME),
+      time: getTimeParts(endTime),
     };
   }
 
@@ -55,15 +54,63 @@ const TimerBox = ({ label, value }) => (
 );
 
 const CountdownTimer = () => {
-  const [timerState, setTimerState] = useState(getTimerState);
+  const [schedule, setSchedule] = useState(null);
+  const [scheduleStatus, setScheduleStatus] = useState('loading');
+  const [timerState, setTimerState] = useState({
+    title: 'Loading contest timing',
+    message: null,
+    time: { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 },
+  });
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchSchedule = async () => {
+      try {
+        const response = await fetch('/api/contest/dates');
+        if (!response.ok) throw new Error('Unable to fetch contest dates');
+        const data = await response.json();
+        const nextSchedule = {
+          startTime: new Date(data.startTime),
+          endTime: new Date(data.endTime),
+        };
+        if (isMounted) {
+          setSchedule(nextSchedule);
+          setScheduleStatus('ready');
+        }
+      } catch (error) {
+        if (isMounted) {
+          setSchedule(null);
+          setScheduleStatus('error');
+        }
+      }
+    };
+
+    fetchSchedule();
+    const scheduleInterval = setInterval(fetchSchedule, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(scheduleInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!schedule) {
+      setTimerState({
+        title: scheduleStatus === 'error' ? 'Contest timing unavailable' : 'Loading contest timing',
+        message: scheduleStatus === 'error' ? 'Please try again after a moment.' : null,
+        time: { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 },
+      });
+      return undefined;
+    }
+
+    setTimerState(getTimerState(schedule.startTime, schedule.endTime));
     const interval = setInterval(() => {
-      setTimerState(getTimerState());
+      setTimerState(getTimerState(schedule.startTime, schedule.endTime));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [schedule, scheduleStatus]);
 
   const boxes = useMemo(
     () => [

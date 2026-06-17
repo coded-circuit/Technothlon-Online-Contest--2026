@@ -77,7 +77,7 @@ const PrizesSection = () => (
       </div>
 
       <p className="mt-3 text-center text-xs italic font-semibold text-slate-600">
-        Highest scholarship applies if both team members qualify. Individual participation is also allowed.
+        Discount vouchers on Technothlon Registration fees.
       </p>
     </div>
   </section>

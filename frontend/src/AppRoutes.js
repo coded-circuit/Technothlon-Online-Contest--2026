@@ -14,7 +14,7 @@
 // Defines all routes and navigation paths for the application
 // Maps URL paths to their corresponding components
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Import page components
@@ -23,21 +23,53 @@ import Technopedia from './components/Pages/Technopedia/technopedia';
 import TechnopediaQuestion from './components/Pages/Technopedia/technopedia-question';
 import TechnopediaYear from './components/Pages/Technopedia/technopediaYear';
 import Leaderboard from './components/Pages/Contest/Leaderboard';
-import MegaContestLogin from './components/Pages/Mega-Contest/login';
 import MegaContest from './pages/MegaContest';
 
 import Contestlogin from './components/Pages/Contest/contest_login';
 import Contest from './components/Pages/Contest/Contest';
 import Question from './components/Pages/Contest/question';
-import { CONTEST_END_TIME, CONTEST_START_TIME } from './config/contest';
 import useAuthContext from './hooks/useAuthContext';
 
 const ProtectedContestArena = () => {
   const { isAuthenticated } = useAuthContext();
-  const now = Date.now();
-  const isContestWindowOpen = now >= CONTEST_START_TIME.getTime() && now <= CONTEST_END_TIME.getTime();
+  const [contestWindow, setContestWindow] = useState(null);
+  const [contestWindowStatus, setContestWindowStatus] = useState('loading');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchContestWindow = async () => {
+      try {
+        const response = await fetch('/api/contest/dates');
+        if (!response.ok) throw new Error('Unable to fetch contest dates');
+        const data = await response.json();
+        if (isMounted) {
+          setContestWindow({
+            startTime: new Date(data.startTime),
+            endTime: new Date(data.endTime),
+          });
+          setContestWindowStatus('ready');
+        }
+      } catch (error) {
+        if (isMounted) {
+          setContestWindow(null);
+          setContestWindowStatus('error');
+        }
+      }
+    };
+
+    fetchContestWindow();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (!isAuthenticated) return <Navigate to="/contest/login" replace />;
+  if (contestWindowStatus === 'loading') return null;
+  if (contestWindowStatus === 'error' || !contestWindow) return <Navigate to="/mega-contest" replace />;
+
+  const now = Date.now();
+  const isContestWindowOpen = now >= contestWindow.startTime.getTime() && now <= contestWindow.endTime.getTime();
   return isContestWindowOpen ? <Contest /> : <Navigate to="/mega-contest" replace />;
 };
 
@@ -63,7 +95,6 @@ const AppRoutes = () => {
       <Route path="/contest/arena" element={<ProtectedContestArena />} />
       <Route path="/contest/:id/:letter" element={<Question />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/mega-contest/login" element={<MegaContestLogin />} />
       <Route path="/mega-contest" element={<MegaContest />} />
        </Routes>
   );
